@@ -4,8 +4,8 @@
 <title>Quản lý công việc đội công tác</title>
 <style>
 *{box-sizing:border-box}
-body[data-t=teal]{--bg:#021a18;--bg2:#06504a;--card:rgba(5,45,41,.78);--bd:rgba(46,230,200,.3);--ac:#2ee6c8;--acx:#021a18;--tx:#e6fffa;--mu:#8fc9bf;--inb:rgba(0,18,16,.65)}
-body[data-t=blue]{--bg:#030f22;--bg2:#0b3a6e;--card:rgba(6,32,64,.78);--bd:rgba(56,189,248,.3);--ac:#38bdf8;--acx:#03111f;--tx:#e8f4ff;--mu:#90b4d4;--inb:rgba(2,12,28,.65)}
+body[data-t=teal]{--bg:#021a18;--bg2:#06504a;--card:rgba(5,45,41,.78);--bd:rgba(46,230,200,.3);--ac:#2ee6c8;--acx:#021a18;--tx:#e6fffa;--mu:#a7e0d5;--inb:rgba(0,18,16,.65)}
+body[data-t=blue]{--bg:#030f22;--bg2:#0b3a6e;--card:rgba(6,32,64,.78);--bd:rgba(56,189,248,.3);--ac:#38bdf8;--acx:#03111f;--tx:#e8f4ff;--mu:#a9c8e6;--inb:rgba(2,12,28,.65)}
 body[data-t=light]{--bg:#e9f3f1;--bg2:#fff;--card:#fff;--bd:#bcd9d3;--ac:#0f766e;--acx:#fff;--tx:#0b2b27;--mu:#4f6f69;--inb:#f4faf9}
 body{margin:0;font-family:system-ui,"Segoe UI",sans-serif;color:var(--tx);min-height:100vh;background:radial-gradient(ellipse at 50% 40%,var(--bg2),var(--bg) 75%) fixed;padding-bottom:calc(70px + env(safe-area-inset-bottom))}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);background-size:34px 34px}
@@ -31,8 +31,21 @@ button.s{padding:5px 11px;font-size:13px}button.d{background:#dc2626;color:#fff;
 .stat div{text-align:center;padding:12px 6px;border:1px solid var(--bd);border-radius:10px;background:var(--inb)}
 .stat b{display:block;font-size:28px;color:var(--ac);text-shadow:0 0 12px var(--ac)}.stat span{font-size:12px;color:var(--mu)}
 body[data-t=light] .stat b{text-shadow:none}
-.task{border-left:4px solid var(--ac)}.task.late{border-left-color:#f87171}.task.done{opacity:.6}
-.task .t{font-weight:600}.task .m{font-size:13px;color:var(--mu);margin:6px 0;display:flex;gap:6px;flex-wrap:wrap}
+.task{border-left:6px solid var(--ac)}.task.late{border-left-color:#f87171}.task.done{opacity:.88;border-left-color:#4ade80}
+.task .t{font-size:18px;font-weight:700;line-height:1.35}
+.task .ds{margin:8px 0 0;padding:8px 10px;border-radius:8px;background:var(--inb);color:var(--mu);font-size:14px;line-height:1.5;white-space:pre-wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px}
+.f{border:1px solid var(--bd);border-radius:8px;padding:6px 10px;background:var(--inb)}
+.f label,.lb{display:block;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--mu);margin-bottom:2px}
+.lb{font-size:12px;margin:12px 0 2px}.f .v{font-size:15px;font-weight:600}.f select{margin:0;padding:4px 6px;font-weight:600}
+.f.late{border-color:#f87171;background:rgba(248,113,113,.16)}.f.late .v{color:#fca5a5}
+.f.soon{border-color:#fbbf24;background:rgba(251,191,36,.14)}.f.soon .v{color:#fcd34d}
+.f.ok{border-color:#4ade80}.f.ok .v{color:#4ade80}.f.s1{border-color:#60a5fa;background:rgba(96,165,250,.14)}.f.s2{border-color:#4ade80;background:rgba(74,222,128,.14)}
+body[data-t=light] .f.late .v{color:#b91c1c}body[data-t=light] .f.soon .v{color:#92400e}body[data-t=light] .f.ok .v{color:#15803d}
+input,select,textarea{font-size:16px}input::placeholder,textarea::placeholder{color:var(--mu);opacity:.85}
+.mic{align-self:flex-start;margin-top:3px}.pv{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.pv div{position:relative}
+.pv img{width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--bd)}
+.pv b{position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:50%;width:20px;height:20px;font-size:13px;text-align:center;line-height:20px;cursor:pointer}
 .tag{font-size:12px;padding:2px 9px;border-radius:10px;border:1px solid var(--bd);background:var(--inb)}.cao{color:#f87171;font-weight:700}
 .hide{display:none!important}#err,#pm,#um{color:#f87171;font-size:14px}.ok{color:var(--ac)!important}
 nav{position:fixed;bottom:0;left:0;right:0;z-index:6;display:flex;background:var(--card);backdrop-filter:blur(10px);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom)}
@@ -96,17 +109,22 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
 </main>
 
 <dialog id="dlg"><h3 id="dt0">Thêm công việc</h3>
- <div class="row" style="margin-bottom:6px"><button class="g" onclick="$('cam').click()">📷 Chụp / chọn ảnh công văn, AI gợi ý việc</button><input id="cam" type="file" accept="image/*" class="hide" onchange="scanDoc(this.files[0]);this.value=''"></div>
- <div id="sg" class="hide card" style="padding:10px"></div>
- <div class="row"><input id="t" placeholder="Tiêu đề (gõ hoặc bấm 🎤 để nói)"><button class="g mic" onclick="dictate('t',this)">🎤</button></div>
- <div class="row"><textarea id="d" placeholder="Mô tả" rows="2"></textarea><button class="g mic" onclick="dictate('d',this)">🎤</button></div>
- <div style="margin-top:6px;color:var(--mu)">Hạn hoàn thành: <b id="dl" style="color:var(--tx)"></b></div>
+ <button class="g" onclick="$('cam').click()">📷 Thêm ảnh công văn (chụp hoặc chọn nhiều trang)</button>
+ <input id="cam" type="file" accept="image/*" multiple class="hide" onchange="addPics(this.files);this.value=''">
+ <div id="pv" class="pv"></div>
+ <button id="go" class="hide" onclick="scanDoc()">🤖 AI đọc <span id="gn0">0</span> ảnh và gợi ý việc</button>
+ <div id="sg" class="hide card" style="padding:10px;margin-top:8px"></div>
+ <label class="lb">Tên nhiệm vụ</label>
+ <div class="row"><input id="t" placeholder="VD: Xây dựng báo cáo kết quả quý III"><button class="g mic" onclick="dictate('t',this)">🎤</button></div>
+ <label class="lb">Nội dung / căn cứ</label>
+ <div class="row"><textarea id="d" placeholder="VD: Theo Công văn số ... ngày ..." rows="2"></textarea><button class="g mic" onclick="dictate('d',this)">🎤</button></div>
+ <label class="lb">Hạn hoàn thành: <b id="dl" style="color:var(--tx);font-size:14px;text-transform:none"></b></label>
  <input id="due" type="date" onchange="dueLbl()" onclick="try{this.showPicker()}catch(e){}">
  <div class="chips"><button class="g s" onclick="setDue(0)">Hôm nay</button><button class="g s" onclick="setDue(1)">Ngày mai</button><button class="g s" onclick="setDue(3)">3 ngày</button><button class="g s" onclick="setDue(7)">1 tuần</button><button class="g s" onclick="setDue('m')">Cuối tháng</button></div>
- <div id="ra" class="row"><select id="a"></select></div>
- <label style="display:flex;gap:8px;align-items:center;margin:8px 0"><input id="pr" type="checkbox" style="width:auto;margin:0"> Ưu tiên cao</label>
- <div id="rs" class="hide"><select id="st"><option value="0">Chưa làm</option><option value="1">Đang làm</option><option value="2">Hoàn thành</option></select></div>
- <div class="row" style="margin-top:8px"><button onclick="saveTask()">Lưu</button><button class="g" onclick="dlg.close()">Hủy</button></div>
+ <div id="ra"><label class="lb">Người thực hiện</label><select id="a"></select></div>
+ <label style="display:flex;gap:8px;align-items:center;margin:12px 0"><input id="pr" type="checkbox" style="width:auto;margin:0"> Ưu tiên cao</label>
+ <div id="rs" class="hide"><label class="lb">Tình trạng</label><select id="st"><option value="0">Chưa làm</option><option value="1">Đang làm</option><option value="2">Hoàn thành</option></select></div>
+ <div class="row" style="margin-top:10px"><button onclick="saveTask()">Lưu</button><button class="g" onclick="dlg.close()">Hủy</button></div>
 </dialog>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -130,7 +148,7 @@ if(location.protocol==="file:"){
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.firestore();
 const R={doitruong:"Đội trưởng",doipho:"Đội phó",canbo:"Cán bộ"}, ST=["Chưa làm","Đang làm","Hoàn thành"], AV=["👮","🦅","🛡️","⭐","🚀","🐯","🦁","🐉"];
-let gem={}, sug=[], rec=null, me=null, users=[], tasks=[], unsub=[], editId=null, rows=[];
+let gem={}, pics=[], sug=[], rec=null, me=null, users=[], tasks=[], unsub=[], editId=null, rows=[];
 const $=id=>document.getElementById(id), email=u=>u.trim().toLowerCase()+"@doi.local";
 const isLead=()=>me&&me.role!=="canbo";
 const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -172,7 +190,7 @@ function openTask(id){
  const o=isLead()?users:users.filter(u=>u.id===me.uid);
  $("a").innerHTML=o.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join("");$("a").value=t.assignee;
  $("ra").classList.toggle("hide",o.length<2||(!!id&&!isLead()));$("rs").classList.toggle("hide",!id);
- $("sg").classList.add("hide");$("sg").innerHTML="";dueLbl();dlg.showModal(); }
+ pics=[];renderPics();$("sg").classList.add("hide");$("sg").innerHTML="";dueLbl();dlg.showModal(); }
 async function saveTask(){
  if(!$("t").value.trim()) return alert("Cần nhập tiêu đề.");
  const f={title:$("t").value.trim(),desc:$("d").value,assignee:$("a").value,due:$("due").value,priority:$("pr").checked?1:0,status:editId?+$("st").value:0};
@@ -195,21 +213,36 @@ function dictate(id,btn){
  rec.onend=()=>{rec=null;btn.textContent="🎤"}; rec.onerror=()=>{}; rec.start(); }
 
 const shrink=f=>new Promise((ok,no)=>{const im=new Image(),u=URL.createObjectURL(f);
- im.onload=()=>{const k=Math.min(1,1800/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;
-  c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",.85).split(",")[1])};
+ im.onload=()=>{const k=Math.min(1,1500/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;
+  c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",.8).split(",")[1])};
  im.onerror=()=>no(new Error("Không mở được ảnh"));im.src=u});
-async function scanDoc(f){
- if(!f)return; const g=$("sg"); g.classList.remove("hide");
+function renderPics(){
+ $("pv").innerHTML=pics.map((b,i)=>`<div><img src="data:image/jpeg;base64,${b}"><b onclick="rmPic(${i})">×</b></div>`).join("");
+ $("go").classList.toggle("hide",!pics.length);$("gn0").textContent=pics.length}
+const rmPic=i=>{pics.splice(i,1);renderPics()};
+async function addPics(fs){
+ for(const f of [...fs]){ if(pics.length>=10){alert("Tối đa 10 ảnh một lần.");break}
+  try{pics.push(await shrink(f));renderPics()}catch(e){alert(e.message)} } }
+async function scanDoc(){
+ const g=$("sg"); g.classList.remove("hide");
  if(!gem.key){g.textContent="Chưa có API key Gemini. Nhờ đội trưởng hoặc đội phó nhập ở tab Cài đặt.";return}
- g.textContent="⏳ AI đang đọc văn bản...";
- const prompt=`Đây là ảnh một văn bản hành chính (công văn) của Việt Nam. Hãy đọc kỹ và đề xuất các nhiệm vụ mà đơn vị nhận cần thực hiện. Hôm nay là ${dayStr(0)}. Trả về JSON là một mảng, mỗi phần tử có: "title" (tên nhiệm vụ ngắn gọn, dưới 120 ký tự), "desc" (số, ký hiệu, trích yếu, cơ quan ban hành và yêu cầu chính), "due" (hạn hoàn thành dạng YYYY-MM-DD nếu văn bản nêu rõ, nếu không thì chuỗi rỗng). Không bịa thông tin không có trong văn bản.`;
- try{ const b=await shrink(f);
+ g.textContent="⏳ AI đang đọc "+pics.length+" ảnh...";
+ const prompt=`Các ảnh đính kèm là các trang, theo thứ tự, của CÙNG MỘT văn bản hành chính Việt Nam (công văn, kế hoạch, quyết định, thông báo...). Hãy đọc toàn bộ rồi đề xuất các nhiệm vụ mà đơn vị nhận văn bản (đội công tác cấp cơ sở) phải thực hiện. Hôm nay là ${dayStr(0)}.
+
+Quy tắc ghi "title":
+- Ngắn gọn, tối đa 90 ký tự, bắt đầu bằng động từ hành chính phù hợp với yêu cầu của văn bản, ví dụ: "Xây dựng báo cáo ...", "Lập tờ trình ...", "Soạn thảo công văn ...", "Gửi báo cáo ... về ...", "Thống kê, tổng hợp ...", "Rà soát ...", "Tham mưu ...", "Triển khai ...", "Tổ chức ...", "Chuẩn bị ...", "Đôn đốc ...".
+- Nêu rõ đối tượng và nơi nhận nếu có (ví dụ: "Gửi báo cáo kết quả quý III về Phòng PV01"). Không chép nguyên câu dài của văn bản, không đưa số, ký hiệu văn bản vào title.
+- Gộp các ý nhỏ thuộc cùng một việc, không tách vụn, không trùng lặp.
+Quy tắc "desc": 1 đến 3 câu gồm số và ký hiệu văn bản, ngày ban hành, cơ quan ban hành, trích yếu, yêu cầu chính, nơi nhận báo cáo.
+Quy tắc "due": dạng YYYY-MM-DD. Nếu văn bản nêu hạn cụ thể (ví dụ "trước ngày 20/11/2026") thì dùng ngày đó. Nếu chỉ nêu tương đối (ví dụ "trong 05 ngày làm việc kể từ ngày nhận") mà không đủ căn cứ để tính thì để chuỗi rỗng. Không bịa thông tin không có trong văn bản.
+Chỉ trả về JSON là một mảng các đối tượng {"title","desc","due"}.`;
+ try{
   const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gem.model||"gemini-3.5-flash"}:generateContent`,{method:"POST",
    headers:{"Content-Type":"application/json","x-goog-api-key":gem.key},
-   body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:"image/jpeg",data:b}},{text:prompt}]}],generationConfig:{responseMimeType:"application/json"}})});
+   body:JSON.stringify({contents:[{parts:[...pics.map(b=>({inline_data:{mime_type:"image/jpeg",data:b}})),{text:prompt}]}],generationConfig:{responseMimeType:"application/json"}})});
   const j=await r.json(); if(!r.ok)throw new Error((j.error&&j.error.message)||r.status);
   sug=JSON.parse(j.candidates[0].content.parts.map(x=>x.text||"").join("").replace(/```json|```/g,"").trim()); if(!Array.isArray(sug))sug=[];
-  g.innerHTML=sug.length?sug.map((x,i)=>`<label class="sgi"><input type="checkbox" checked data-i="${i}" style="width:auto"><div><b>${esc(x.title)}</b><br><small>Hạn: ${vn(x.due)||"không nêu"} · ${esc(x.desc)}</small></div></label>`).join("")+'<button style="margin-top:8px" onclick="addSug()">＋ Thêm các việc đã chọn (giao cho tôi)</button>':"AI không tìm thấy nhiệm vụ rõ ràng trong ảnh.";
+  g.innerHTML=sug.length?sug.map((x,i)=>`<label class="sgi"><input type="checkbox" checked data-i="${i}" style="width:auto"><div><b style="font-size:15px">${esc(x.title)}</b><br><small>Hạn: <b>${vn(x.due)||"không nêu"}</b></small><br><small>${esc(x.desc)}</small></div></label>`).join("")+'<button style="margin-top:8px" onclick="addSug()">＋ Thêm các việc đã chọn (giao cho tôi)</button>':"AI không tìm thấy nhiệm vụ rõ ràng trong ảnh.";
  }catch(e){g.textContent="Không đọc được: "+e.message} }
 async function addSug(){
  const ids=[...document.querySelectorAll("#sg input:checked")].map(x=>+x.dataset.i);
@@ -223,14 +256,24 @@ async function saveGem(){ const m=$("gmsg");
 const setStatus=(id,s)=>db.collection("tasks").doc(id).update({status:+s});
 const delTask=id=>confirm("Xóa công việc này?")&&db.collection("tasks").doc(id).delete();
 
+function dueInfo(t){
+ if(!t.due)return["","Không có hạn"];
+ const n=Math.round((new Date(t.due+"T00:00")-new Date(today()+"T00:00"))/864e5);
+ if(t.status==2)return["ok",vn(t.due)+" · đã xong"];
+ if(n<0)return["late",vn(t.due)+" · quá hạn "+(-n)+" ngày"];
+ if(n==0)return["soon",vn(t.due)+" · hôm nay"];
+ return[n<=2?"soon":"",vn(t.due)+" · còn "+n+" ngày"];}
 function render(){
  const mine=tasks.filter(t=>t.assignee===me.uid).sort((a,b)=>(a.status==2)-(b.status==2)||(a.due||"9").localeCompare(b.due||"9"));
  $("s1").textContent=mine.filter(t=>t.status<2).length;$("s2").textContent=mine.filter(t=>t.status==2).length;$("s3").textContent=mine.filter(isLate).length;
- $("list").innerHTML=mine.map(t=>{const can=isLead()||t.createdBy===me.uid;
+ $("list").innerHTML=mine.map(t=>{const can=isLead()||t.createdBy===me.uid,[dc,dt]=dueInfo(t);
   return `<div class="card task ${isLate(t)?"late":""} ${t.status==2?"done":""}"><div class="t">${esc(t.title)} ${t.priority?'<span class="cao">● Ưu tiên cao</span>':""}</div>
-  <div>${esc(t.desc)}</div><div class="m"><span class="tag">Hạn: ${vn(t.due)||"không"}${isLate(t)?" · QUÁ HẠN":""}</span></div>
-  <div class="row"><select onchange="setStatus('${t.id}',this.value)">${ST.map((x,i)=>`<option value="${i}" ${i==t.status?"selected":""}>${x}</option>`).join("")}</select>
-  ${can?`<button class="g s" onclick="openTask('${t.id}')">Sửa</button><button class="d" onclick="delTask('${t.id}')">Xóa</button>`:""}</div></div>`}).join("")||'<div class="card">Bạn chưa có công việc. Bấm “Thêm việc” để bắt đầu.</div>';
+  ${t.desc?`<div class="ds">${esc(t.desc)}</div>`:""}
+  <div class="grid"><div class="f ${dc}"><label>Hạn hoàn thành</label><div class="v">${dt}</div></div>
+  <div class="f"><label>Người thực hiện</label><div class="v">${esc(name(t.assignee))}</div></div>
+  <div class="f s${t.status}"><label>Tình trạng</label><select onchange="setStatus('${t.id}',this.value)">${ST.map((x,i)=>`<option value="${i}" ${i==t.status?"selected":""}>${x}</option>`).join("")}</select></div>
+  ${t.createdBy&&t.createdBy!==t.assignee?`<div class="f"><label>Người giao</label><div class="v">${esc(name(t.createdBy))}</div></div>`:""}</div>
+  ${can?`<div class="row" style="margin-top:10px;justify-content:flex-end"><button class="g s" onclick="openTask('${t.id}')">Sửa</button><button class="d" onclick="delTask('${t.id}')">Xóa</button></div>`:""}</div>`}).join("")||'<div class="card">Bạn chưa có công việc. Bấm “Thêm việc” để bắt đầu.</div>';
  if(!$("p1").classList.contains("hide"))renderStats();
 }
 function renderStats(){
