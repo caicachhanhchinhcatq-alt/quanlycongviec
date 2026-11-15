@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quản lý công việc đội công tác</title>
+<style>
+*{box-sizing:border-box}body{font-family:system-ui,sans-serif;margin:0;background:#f3f4f6;color:#111}
+header{background:#1e3a8a;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+main{max-width:900px;margin:auto;padding:12px}
+.card{background:#fff;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px #0002}
+input,select,textarea,button{font:inherit;padding:8px;border:1px solid #ccc;border-radius:6px;width:100%;margin:3px 0}
+button{background:#1e3a8a;color:#fff;border:0;cursor:pointer;width:auto;padding:8px 14px}
+button.s{background:#6b7280;padding:4px 10px;font-size:13px}button.d{background:#b91c1c;padding:4px 10px;font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:140px}
+.tag{font-size:12px;padding:2px 8px;border-radius:10px;background:#e5e7eb}
+.late{border-left:5px solid #dc2626}.cao{color:#dc2626;font-weight:600}
+.st0{background:#fde68a}.st1{background:#bfdbfe}.st2{background:#bbf7d0}
+.hide{display:none}#err{color:#b91c1c}
+</style></head><body>
+<header><b>Quản lý công việc đội công tác</b><span id="who"></span></header>
+<main>
+<div id="login" class="card hide">
+ <h3>Đăng nhập</h3>
+ <input id="lu" placeholder="Tên đăng nhập (không dấu, không cách)"><input id="lp" type="password" placeholder="Mật khẩu (từ 6 ký tự)">
+ <button onclick="login()">Đăng nhập</button>
+ <button class="s" onclick="firstSetup()">Tạo tài khoản đội trưởng đầu tiên</button>
+ <p id="err"></p>
+</div>
+<div id="app" class="hide">
+ <div class="card"><div class="row">
+  <select id="fp" onchange="render()"></select>
+  <select id="fs" onchange="render()"><option value="">Mọi trạng thái</option><option value="0">Chưa làm</option><option value="1">Đang làm</option><option value="2">Hoàn thành</option></select>
+  <select id="fl" onchange="render()"><option value="">Mọi hạn</option><option value="late">Quá hạn</option></select>
+ </div></div>
+ <div class="card"><h3>Thêm công việc</h3>
+   <input id="t" placeholder="Tiêu đề"><textarea id="d" placeholder="Mô tả" rows="2"></textarea>
+   <div class="row"><select id="a"></select><input id="due" type="date">
+   <select id="pr"><option value="0">Ưu tiên thường</option><option value="1">Ưu tiên cao</option></select></div>
+   <button onclick="addTask()">Thêm việc</button></div>
+  <div id="lead" class="hide">
+  <div class="card"><h3>Tài khoản thành viên</h3>
+   <div class="row"><input id="nu" placeholder="Tên đăng nhập"><input id="nn" placeholder="Họ tên"><input id="np" placeholder="Mật khẩu ban đầu">
+   <select id="nr"><option value="canbo">Cán bộ</option><option value="doipho">Đội phó</option><option value="doitruong">Đội trưởng</option></select></div>
+   <button onclick="addUser()">Tạo tài khoản</button> <span id="um"></span></div>
+ </div>
+ <div id="list"></div>
+ <button class="s" onclick="auth.signOut()">Đăng xuất</button>
+</div>
+</main>
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+// === DÁN firebaseConfig CỦA BẠN VÀO ĐÂY (Firebase Console > Project settings > Your apps) ===
+const firebaseConfig = {
+  apiKey: "AIzaSyCGo-yt3pX7Ram35QMZysGEF90FRtOiOt8",
+  authDomain: "quanlycongviec-4c317.firebaseapp.com",
+  projectId: "quanlycongviec-4c317",
+  storageBucket: "quanlycongviec-4c317.firebasestorage.app",
+  messagingSenderId: "1073544668373",
+  appId: "1:1073544668373:web:298326e12bfd608a6cae5c",
+  measurementId: "G-7BJH7Y3YZZ"
+};
+// === Firestore rules gợi ý: xem hướng dẫn trong phản hồi ===
+if(!firebaseConfig.apiKey||location.protocol==="file:"){
+ document.querySelector("main").innerHTML='<div class="card"><b>Chưa chạy được:</b><br>'+(!firebaseConfig.apiKey?'- Chưa dán firebaseConfig vào file (apiKey đang trống).<br>':'')+(location.protocol==="file:"?'- Đang mở trực tiếp từ ổ đĩa (file://). Firebase Auth cần địa chỉ http://localhost hoặc https://.':'')+'</div>';
+ throw new Error("Thiếu cấu hình hoặc mở bằng file://");
+}
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(), db=firebase.firestore();
+const R={doitruong:"Đội trưởng",doipho:"Đội phó",canbo:"Cán bộ"}, ST=["Chưa làm","Đang làm","Hoàn thành"];
+let me=null, users=[], tasks=[], unsub=[];
+const $=id=>document.getElementById(id), email=u=>u.trim().toLowerCase()+"@doi.local";
+const isLead=()=>me&&me.role!=="canbo";
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const today=()=>new Date().toISOString().slice(0,10);
+
+function login(){ $("err").textContent="";
+ auth.signInWithEmailAndPassword(email($("lu").value),$("lp").value).catch(()=>$("err").textContent="Sai tên đăng nhập hoặc mật khẩu."); }
+
+async function firstSetup(){ // chỉ thành công nếu chưa có ai trong hệ thống
+ const u=$("lu").value,p=$("lp").value; if(!u||p.length<6){$("err").textContent="Nhập tên đăng nhập và mật khẩu từ 6 ký tự.";return}
+ try{ const c=await auth.createUserWithEmailAndPassword(email(u),p);
+  const n=await db.collection("users").limit(1).get();
+  if(!n.empty){await c.user.delete();$("err").textContent="Hệ thống đã có tài khoản, hãy nhờ đội trưởng tạo cho bạn.";return}
+  await db.collection("users").doc(c.user.uid).set({name:u,username:u,role:"doitruong"});
+  location.reload();
+ }catch(e){$("err").textContent=e.message}}
+
+async function addUser(){
+ const u=$("nu").value.trim(),n=$("nn").value.trim(),p=$("np").value; if(!u||!n||p.length<6){$("um").textContent="Cần tên đăng nhập, họ tên, mật khẩu ≥ 6 ký tự.";return}
+ const sec=firebase.initializeApp(firebaseConfig,"sec"+Date.now()); // app phụ để không bị đăng nhập sang tài khoản mới
+ try{ const c=await sec.auth().createUserWithEmailAndPassword(email(u),p);
+  await db.collection("users").doc(c.user.uid).set({name:n,username:u,role:$("nr").value});
+  $("um").textContent="Đã tạo "+n; ["nu","nn","np"].forEach(i=>$(i).value="");
+ }catch(e){$("um").textContent=e.message} finally{await sec.auth().signOut();sec.delete()}}
+
+async function addTask(){
+ if(!$("t").value.trim()||!$("a").value) return alert("Cần tiêu đề và người phụ trách.");
+ await db.collection("tasks").add({title:$("t").value.trim(),desc:$("d").value,assignee:$("a").value,due:$("due").value,
+  priority:+$("pr").value,status:0,createdBy:me.uid,createdAt:Date.now()});
+ $("t").value=$("d").value=""; }
+const setStatus=(id,s)=>db.collection("tasks").doc(id).update({status:+s});
+const delTask=id=>confirm("Xóa công việc này?")&&db.collection("tasks").doc(id).delete();
+
+function render(){
+ const p=$("fp").value,s=$("fs").value,l=$("fl").value, name=id=>(users.find(x=>x.id===id)||{}).name||"?";
+ const rows=tasks.filter(t=>(!p||t.assignee===p)&&(s===""||t.status==s)&&(!l||(t.status<2&&t.due&&t.due<today())))
+  .sort((a,b)=>a.status-b.status||(a.due||"9").localeCompare(b.due||"9"));
+ $("list").innerHTML=rows.map(t=>{const late=t.status<2&&t.due&&t.due<today(),mine=t.assignee===me.uid||t.createdBy===me.uid;
+  return `<div class="card ${late?"late":""}"><b>${esc(t.title)}</b> ${t.priority?'<span class="cao">● Ưu tiên cao</span>':""}
+  <div>${esc(t.desc)}</div><div class="row" style="align-items:center;margin-top:6px">
+  <span class="tag">${esc(name(t.assignee))}</span><span class="tag">Hạn: ${t.due||"không"}${late?" (QUÁ HẠN)":""}</span>
+  ${(mine||isLead())?`<select onchange="setStatus('${t.id}',this.value)">${ST.map((x,i)=>`<option value="${i}" ${i==t.status?"selected":""}>${x}</option>`).join("")}</select>`:`<span class="tag st${t.status}">${ST[t.status]}</span>`}
+  ${(isLead()||t.createdBy===me.uid)?`<button class="d" onclick="delTask('${t.id}')">Xóa</button>`:""}</div></div>`}).join("")||'<div class="card">Không có công việc.</div>';
+}
+function fillUsers(){
+ const o=users.map(u=>`<option value="${u.id}">${esc(u.name)} (${R[u.role]})</option>`).join("");
+ const keep=$("fp").value; $("fp").innerHTML='<option value="">Mọi người</option>'+o; $("fp").value=keep; const oa=isLead()?o:users.filter(u=>u.id===me.uid).map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join(""); const ka=$("a").value; $("a").innerHTML=oa; $("a").value=ka||me.uid; }
+
+auth.onAuthStateChanged(async u=>{
+ unsub.forEach(f=>f());unsub=[];
+ if(!u){$("login").classList.remove("hide");$("app").classList.add("hide");$("who").textContent="";return}
+ const d=await db.collection("users").doc(u.uid).get();
+ if(!d.exists){await auth.signOut();return}
+ me={uid:u.uid,...d.data()};
+ $("login").classList.add("hide");$("app").classList.remove("hide");
+ $("lead").classList.toggle("hide",!isLead());
+ $("who").textContent=me.name+" – "+R[me.role];
+ unsub.push(db.collection("users").onSnapshot(s=>{users=s.docs.map(x=>({id:x.id,...x.data()}));fillUsers();render()}));
+ unsub.push(db.collection("tasks").onSnapshot(s=>{tasks=s.docs.map(x=>({id:x.id,...x.data()}));render()}));
+});
+</script></body></html>
