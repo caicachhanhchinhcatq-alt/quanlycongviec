@@ -1,57 +1,109 @@
 <!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Quản lý công việc đội công tác</title>
 <style>
-*{box-sizing:border-box}body{font-family:system-ui,sans-serif;margin:0;background:#f3f4f6;color:#111}
-header{background:#1e3a8a;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-main{max-width:900px;margin:auto;padding:12px}
-.card{background:#fff;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px #0002}
-input,select,textarea,button{font:inherit;padding:8px;border:1px solid #ccc;border-radius:6px;width:100%;margin:3px 0}
-button{background:#1e3a8a;color:#fff;border:0;cursor:pointer;width:auto;padding:8px 14px}
-button.s{background:#6b7280;padding:4px 10px;font-size:13px}button.d{background:#b91c1c;padding:4px 10px;font-size:13px}
-.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:140px}
-.tag{font-size:12px;padding:2px 8px;border-radius:10px;background:#e5e7eb}
-.late{border-left:5px solid #dc2626}.cao{color:#dc2626;font-weight:600}
-.st0{background:#fde68a}.st1{background:#bfdbfe}.st2{background:#bbf7d0}
-.hide{display:none}#err{color:#b91c1c}
-</style></head><body>
-<header><b>Quản lý công việc đội công tác</b><span id="who"></span></header>
+*{box-sizing:border-box}
+body[data-t=teal]{--bg:#021a18;--bg2:#06504a;--card:rgba(5,45,41,.78);--bd:rgba(46,230,200,.3);--ac:#2ee6c8;--acx:#021a18;--tx:#e6fffa;--mu:#8fc9bf;--inb:rgba(0,18,16,.65)}
+body[data-t=blue]{--bg:#030f22;--bg2:#0b3a6e;--card:rgba(6,32,64,.78);--bd:rgba(56,189,248,.3);--ac:#38bdf8;--acx:#03111f;--tx:#e8f4ff;--mu:#90b4d4;--inb:rgba(2,12,28,.65)}
+body[data-t=light]{--bg:#e9f3f1;--bg2:#fff;--card:#fff;--bd:#bcd9d3;--ac:#0f766e;--acx:#fff;--tx:#0b2b27;--mu:#4f6f69;--inb:#f4faf9}
+body{margin:0;font-family:system-ui,"Segoe UI",sans-serif;color:var(--tx);min-height:100vh;background:radial-gradient(ellipse at 50% 40%,var(--bg2),var(--bg) 75%) fixed;padding-bottom:calc(70px + env(safe-area-inset-bottom))}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);background-size:34px 34px}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.7;background:
+ linear-gradient(var(--ac),var(--ac)) 18% 0/2px 14vh no-repeat,linear-gradient(var(--ac),var(--ac)) 50% 0/2px 9vh no-repeat,linear-gradient(var(--ac),var(--ac)) 82% 0/2px 16vh no-repeat,
+ linear-gradient(var(--ac),var(--ac)) 30% 100%/2px 12vh no-repeat,linear-gradient(var(--ac),var(--ac)) 70% 100%/2px 15vh no-repeat,
+ linear-gradient(var(--ac),var(--ac)) 0 30%/10vw 2px no-repeat,linear-gradient(var(--ac),var(--ac)) 100% 62%/12vw 2px no-repeat}
+body[data-t=light]::before,body[data-t=light]::after{opacity:.08}
+header{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:var(--card);backdrop-filter:blur(8px);border-bottom:1px solid var(--bd)}
+header b{font-size:17px;letter-spacing:.3px;text-shadow:0 0 12px var(--ac)}
+body[data-t=light] header b{text-shadow:none}
+#who{font-size:13px;color:var(--mu);display:flex;align-items:center;gap:8px}
+.av{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:19px;border:1px solid var(--ac);box-shadow:0 0 10px var(--bd);background:var(--inb)}
+main{position:relative;z-index:1;max-width:960px;margin:auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px;backdrop-filter:blur(6px);box-shadow:0 0 18px rgba(0,0,0,.18)}
+h3{margin:0 0 10px;font-size:16px;color:var(--ac)}
+input,select,textarea,button{font:inherit;color:var(--tx);padding:9px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--inb);width:100%;margin:3px 0}
+button{background:var(--ac);color:var(--acx);border:0;cursor:pointer;width:auto;font-weight:600;padding:9px 16px}
+button.g{background:transparent;color:var(--ac);border:1px solid var(--ac)}
+button.s{padding:5px 11px;font-size:13px}button.d{background:#dc2626;color:#fff;padding:5px 11px;font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1;min-width:130px}.row>button{flex:0 0 auto}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat div{text-align:center;padding:12px 6px;border:1px solid var(--bd);border-radius:10px;background:var(--inb)}
+.stat b{display:block;font-size:28px;color:var(--ac);text-shadow:0 0 12px var(--ac)}.stat span{font-size:12px;color:var(--mu)}
+body[data-t=light] .stat b{text-shadow:none}
+.task{border-left:4px solid var(--ac)}.task.late{border-left-color:#f87171}.task.done{opacity:.6}
+.task .t{font-weight:600}.task .m{font-size:13px;color:var(--mu);margin:6px 0;display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12px;padding:2px 9px;border-radius:10px;border:1px solid var(--bd);background:var(--inb)}.cao{color:#f87171;font-weight:700}
+.hide{display:none!important}#err,#pm,#um{color:#f87171;font-size:14px}.ok{color:var(--ac)!important}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:6;display:flex;background:var(--card);backdrop-filter:blur(10px);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;color:var(--mu);border-radius:0;padding:10px 4px;font-size:12px;font-weight:500}
+nav button span{display:block;font-size:20px}nav button.on{color:var(--ac);text-shadow:0 0 10px var(--ac)}
+@media(min-width:760px){body{padding-bottom:0}nav{position:sticky;top:57px;bottom:auto;border-top:0;border-bottom:1px solid var(--bd)}nav button span{display:inline;margin-right:6px}nav button{font-size:14px}}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}th{color:var(--ac)}
+.sc{overflow-x:auto}
+dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:var(--tx);width:min(520px,94vw);padding:16px}dialog::backdrop{background:#000a}
+.avs{display:flex;gap:8px;flex-wrap:wrap}.avs .av{cursor:pointer;width:42px;height:42px}.avs .av.on{background:var(--ac)}
+</style></head><body data-t="teal">
+<header><b>QUẢN LÝ CÔNG VIỆC ĐỘI CÔNG TÁC</b><span id="who"></span></header>
 <main>
-<div id="login" class="card hide">
+<div id="login" class="card hide" style="max-width:420px;margin:40px auto">
  <h3>Đăng nhập</h3>
  <input id="lu" placeholder="Tên đăng nhập (không dấu, không cách)"><input id="lp" type="password" placeholder="Mật khẩu (từ 6 ký tự)">
- <button onclick="login()">Đăng nhập</button>
- <button class="s" onclick="firstSetup()">Tạo tài khoản đội trưởng đầu tiên</button>
+ <div class="row"><button onclick="login()">Đăng nhập</button><button class="g s" onclick="firstSetup()">Tạo tài khoản đội trưởng đầu tiên</button></div>
  <p id="err"></p>
 </div>
 <div id="app" class="hide">
- <div class="card"><div class="row">
-  <select id="fp" onchange="render()"></select>
-  <select id="fs" onchange="render()"><option value="">Mọi trạng thái</option><option value="0">Chưa làm</option><option value="1">Đang làm</option><option value="2">Hoàn thành</option></select>
-  <select id="fl" onchange="render()"><option value="">Mọi hạn</option><option value="late">Quá hạn</option></select>
- </div></div>
- <div class="card"><h3>Thêm công việc</h3>
-   <input id="t" placeholder="Tiêu đề"><textarea id="d" placeholder="Mô tả" rows="2"></textarea>
-   <div class="row"><select id="a"></select><input id="due" type="date">
-   <select id="pr"><option value="0">Ưu tiên thường</option><option value="1">Ưu tiên cao</option></select></div>
-   <button onclick="addTask()">Thêm việc</button></div>
-  <div id="lead" class="hide">
-  <div class="card"><h3>Tài khoản thành viên</h3>
+ <nav><button id="n0" class="on" onclick="tab(0)"><span>🏠</span>Chính</button><button id="n1" onclick="tab(1)"><span>📊</span>Thống kê</button><button id="n2" onclick="tab(2)"><span>⚙️</span>Cài đặt</button></nav>
+
+ <section id="p0">
+  <div class="card"><h3>Công việc của tôi</h3><div class="stat">
+   <div><b id="s1">0</b><span>Đang thực hiện</span></div><div><b id="s2">0</b><span>Đã xong</span></div><div><b id="s3">0</b><span>Quá hạn</span></div></div></div>
+  <div class="row" style="margin-bottom:8px"><h3 style="flex:1;margin:0">Nhiệm vụ chi tiết</h3><button onclick="openTask()">＋ Thêm việc</button></div>
+  <div id="list"></div>
+ </section>
+
+ <section id="p1" class="hide">
+  <div class="card"><h3>Tra cứu công việc</h3>
+   <div class="row"><input id="q" placeholder="Từ khóa trong tiêu đề, mô tả" oninput="renderStats()"><select id="fp" onchange="renderStats()"></select>
+   <select id="fs" onchange="renderStats()"><option value="">Mọi trạng thái</option><option value="0">Chưa làm</option><option value="1">Đang làm</option><option value="2">Hoàn thành</option></select></div>
+   <div class="row"><label>Hạn từ <input id="df" type="date" onchange="renderStats()"></label><label>đến <input id="dt" type="date" onchange="renderStats()"></label></div>
+  </div>
+  <div class="card"><div id="sum" style="margin-bottom:8px;color:var(--mu)"></div><div class="sc"><table id="tb"></table></div></div>
+  <div class="card"><h3>Xuất báo cáo (theo kết quả tra cứu)</h3>
+   <div class="row"><input id="w1" placeholder="Cơ quan chủ quản (VD: CÔNG AN TỈNH ...)"><input id="w2" placeholder="Tên đơn vị (VD: ĐỘI ...)"></div>
+   <div class="row"><input id="w3" placeholder="Địa danh (VD: Hà Giang)"><input id="w4" placeholder="Chức vụ người ký (VD: ĐỘI TRƯỞNG)"><input id="w5" placeholder="Họ tên người ký"></div>
+   <div class="row"><button onclick="exXlsx()">⬇ Xuất Excel</button><button class="g" onclick="exDoc()">⬇ Xuất Word</button></div>
+   <p style="font-size:12px;color:var(--mu);margin:8px 0 0">Word theo thể thức Nghị định 30/2020/NĐ-CP: quốc hiệu, tiêu ngữ, tên cơ quan, tiêu đề, bảng, nơi nhận, chữ ký. Số và ngày ban hành điền thêm sau khi mở file.</p></div>
+ </section>
+
+ <section id="p2" class="hide">
+  <div class="card"><h3>Giao diện</h3><div class="row"><button class="g" onclick="theme('teal')">Xanh lục</button><button class="g" onclick="theme('blue')">Xanh dương</button><button class="g" onclick="theme('light')">Sáng</button></div></div>
+  <div class="card"><h3>Ảnh đại diện</h3><div class="avs" id="avs"></div></div>
+  <div class="card"><h3>Đổi mật khẩu</h3>
+   <input id="po" type="password" placeholder="Mật khẩu hiện tại"><input id="pn" type="password" placeholder="Mật khẩu mới (từ 6 ký tự)">
+   <button onclick="chPass()">Đổi mật khẩu</button> <span id="pm"></span></div>
+  <div id="lead" class="card hide"><h3>Tạo tài khoản thành viên</h3>
    <div class="row"><input id="nu" placeholder="Tên đăng nhập"><input id="nn" placeholder="Họ tên"><input id="np" placeholder="Mật khẩu ban đầu">
    <select id="nr"><option value="canbo">Cán bộ</option><option value="doipho">Đội phó</option><option value="doitruong">Đội trưởng</option></select></div>
    <button onclick="addUser()">Tạo tài khoản</button> <span id="um"></span></div>
- </div>
- <div id="list"></div>
- <button class="s" onclick="auth.signOut()">Đăng xuất</button>
+  <button class="g" onclick="auth.signOut()">Đăng xuất</button>
+ </section>
 </div>
 </main>
-<!-- Firebase compat SDK -->
+
+<dialog id="dlg"><h3 id="dt0">Thêm công việc</h3>
+ <input id="t" placeholder="Tiêu đề"><textarea id="d" placeholder="Mô tả" rows="3"></textarea>
+ <div class="row"><select id="a"></select><input id="due" type="date"></div>
+ <div class="row"><select id="pr"><option value="0">Ưu tiên thường</option><option value="1">Ưu tiên cao</option></select>
+ <select id="st"><option value="0">Chưa làm</option><option value="1">Đang làm</option><option value="2">Hoàn thành</option></select></div>
+ <div class="row" style="margin-top:8px"><button onclick="saveTask()">Lưu</button><button class="g" onclick="dlg.close()">Hủy</button></div>
+</dialog>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-// === DÁN firebaseConfig CỦA BẠN VÀO ĐÂY (Firebase Console > Project settings > Your apps) ===
 const firebaseConfig = {
   apiKey: "AIzaSyCGo-yt3pX7Ram35QMZysGEF90FRtOiOt8",
   authDomain: "quanlycongviec-4c317.firebaseapp.com",
@@ -61,24 +113,30 @@ const firebaseConfig = {
   appId: "1:1073544668373:web:298326e12bfd608a6cae5c",
   measurementId: "G-7BJH7Y3YZZ"
 };
-// === Firestore rules gợi ý: xem hướng dẫn trong phản hồi ===
-if(!firebaseConfig.apiKey||location.protocol==="file:"){
- document.querySelector("main").innerHTML='<div class="card"><b>Chưa chạy được:</b><br>'+(!firebaseConfig.apiKey?'- Chưa dán firebaseConfig vào file (apiKey đang trống).<br>':'')+(location.protocol==="file:"?'- Đang mở trực tiếp từ ổ đĩa (file://). Firebase Auth cần địa chỉ http://localhost hoặc https://.':'')+'</div>';
- throw new Error("Thiếu cấu hình hoặc mở bằng file://");
+if(location.protocol==="file:"){
+ document.querySelector("main").innerHTML='<div class="card"><b>Chưa chạy được:</b> đang mở trực tiếp từ ổ đĩa (file://). Firebase Auth cần địa chỉ https:// hoặc http://localhost.</div>';
+ throw new Error("file://");
 }
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.firestore();
-const R={doitruong:"Đội trưởng",doipho:"Đội phó",canbo:"Cán bộ"}, ST=["Chưa làm","Đang làm","Hoàn thành"];
-let me=null, users=[], tasks=[], unsub=[];
+const R={doitruong:"Đội trưởng",doipho:"Đội phó",canbo:"Cán bộ"}, ST=["Chưa làm","Đang làm","Hoàn thành"], AV=["👮","🦅","🛡️","⭐","🚀","🐯","🦁","🐉"];
+let me=null, users=[], tasks=[], unsub=[], editId=null, rows=[];
 const $=id=>document.getElementById(id), email=u=>u.trim().toLowerCase()+"@doi.local";
 const isLead=()=>me&&me.role!=="canbo";
 const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const today=()=>new Date().toISOString().slice(0,10);
+const today=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const vn=d=>d?d.split("-").reverse().join("/"):"";
+const name=id=>(users.find(x=>x.id===id)||{}).name||"?";
+const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
+const isLate=t=>t.status<2&&t.due&&t.due<today();
+
+function theme(t){document.body.dataset.t=t;ls("theme",t)}
+theme(ls("theme")||"teal");
+function tab(i){[0,1,2].forEach(k=>{$("p"+k).classList.toggle("hide",k!==i);$("n"+k).classList.toggle("on",k===i)});if(i===1)renderStats()}
 
 function login(){ $("err").textContent="";
  auth.signInWithEmailAndPassword(email($("lu").value),$("lp").value).catch(()=>$("err").textContent="Sai tên đăng nhập hoặc mật khẩu."); }
-
-async function firstSetup(){ // chỉ thành công nếu chưa có ai trong hệ thống
+async function firstSetup(){
  const u=$("lu").value,p=$("lp").value; if(!u||p.length<6){$("err").textContent="Nhập tên đăng nhập và mật khẩu từ 6 ký tự.";return}
  try{ const c=await auth.createUserWithEmailAndPassword(email(u),p);
   const n=await db.collection("users").limit(1).get();
@@ -86,47 +144,91 @@ async function firstSetup(){ // chỉ thành công nếu chưa có ai trong hệ
   await db.collection("users").doc(c.user.uid).set({name:u,username:u,role:"doitruong"});
   location.reload();
  }catch(e){$("err").textContent=e.message}}
-
 async function addUser(){
  const u=$("nu").value.trim(),n=$("nn").value.trim(),p=$("np").value; if(!u||!n||p.length<6){$("um").textContent="Cần tên đăng nhập, họ tên, mật khẩu ≥ 6 ký tự.";return}
- const sec=firebase.initializeApp(firebaseConfig,"sec"+Date.now()); // app phụ để không bị đăng nhập sang tài khoản mới
+ const sec=firebase.initializeApp(firebaseConfig,"sec"+Date.now());
  try{ const c=await sec.auth().createUserWithEmailAndPassword(email(u),p);
   await db.collection("users").doc(c.user.uid).set({name:n,username:u,role:$("nr").value});
-  $("um").textContent="Đã tạo "+n; ["nu","nn","np"].forEach(i=>$(i).value="");
- }catch(e){$("um").textContent=e.message} finally{await sec.auth().signOut();sec.delete()}}
+  $("um").className="ok";$("um").textContent="Đã tạo "+n; ["nu","nn","np"].forEach(i=>$(i).value="");
+ }catch(e){$("um").className="";$("um").textContent=e.message} finally{await sec.auth().signOut();sec.delete()}}
 
-async function addTask(){
- if(!$("t").value.trim()||!$("a").value) return alert("Cần tiêu đề và người phụ trách.");
- await db.collection("tasks").add({title:$("t").value.trim(),desc:$("d").value,assignee:$("a").value,due:$("due").value,
-  priority:+$("pr").value,status:0,createdBy:me.uid,createdAt:Date.now()});
- $("t").value=$("d").value=""; }
+async function chPass(){
+ const o=$("po").value,n=$("pn").value,m=$("pm");m.className="";
+ if(n.length<6){m.textContent="Mật khẩu mới cần từ 6 ký tự.";return}
+ try{const u=auth.currentUser;await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,o));
+  await u.updatePassword(n);m.className="ok";m.textContent="Đã đổi mật khẩu.";$("po").value=$("pn").value="";
+ }catch(e){m.textContent="Mật khẩu hiện tại không đúng hoặc mật khẩu mới không hợp lệ."}}
+function setAv(i){db.collection("users").doc(me.uid).update({avatar:AV[i]}).catch(()=>alert("Chưa lưu được ảnh đại diện. Cần cập nhật Firestore rules (xem hướng dẫn)."))}
+
+function openTask(id){
+ editId=id||null; const t=tasks.find(x=>x.id===id)||{title:"",desc:"",assignee:me.uid,due:"",priority:0,status:0};
+ $("dt0").textContent=id?"Sửa công việc":"Thêm công việc";
+ $("t").value=t.title;$("d").value=t.desc;$("due").value=t.due;$("pr").value=t.priority;$("st").value=t.status;
+ $("a").innerHTML=(isLead()?users:users.filter(u=>u.id===me.uid)).map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join("");
+ $("a").value=t.assignee; $("a").disabled=!!id&&!isLead(); dlg.showModal(); }
+async function saveTask(){
+ if(!$("t").value.trim()) return alert("Cần nhập tiêu đề.");
+ const f={title:$("t").value.trim(),desc:$("d").value,assignee:$("a").value,due:$("due").value,priority:+$("pr").value,status:+$("st").value};
+ try{ if(editId) await db.collection("tasks").doc(editId).update(f);
+  else await db.collection("tasks").add({...f,createdBy:me.uid,createdAt:Date.now()}); dlg.close();
+ }catch(e){alert("Không lưu được: "+e.message)} }
 const setStatus=(id,s)=>db.collection("tasks").doc(id).update({status:+s});
 const delTask=id=>confirm("Xóa công việc này?")&&db.collection("tasks").doc(id).delete();
 
 function render(){
- const p=$("fp").value,s=$("fs").value,l=$("fl").value, name=id=>(users.find(x=>x.id===id)||{}).name||"?";
- const rows=tasks.filter(t=>(!p||t.assignee===p)&&(s===""||t.status==s)&&(!l||(t.status<2&&t.due&&t.due<today())))
-  .sort((a,b)=>a.status-b.status||(a.due||"9").localeCompare(b.due||"9"));
- $("list").innerHTML=rows.map(t=>{const late=t.status<2&&t.due&&t.due<today(),mine=t.assignee===me.uid||t.createdBy===me.uid;
-  return `<div class="card ${late?"late":""}"><b>${esc(t.title)}</b> ${t.priority?'<span class="cao">● Ưu tiên cao</span>':""}
-  <div>${esc(t.desc)}</div><div class="row" style="align-items:center;margin-top:6px">
-  <span class="tag">${esc(name(t.assignee))}</span><span class="tag">Hạn: ${t.due||"không"}${late?" (QUÁ HẠN)":""}</span>
-  ${(mine||isLead())?`<select onchange="setStatus('${t.id}',this.value)">${ST.map((x,i)=>`<option value="${i}" ${i==t.status?"selected":""}>${x}</option>`).join("")}</select>`:`<span class="tag st${t.status}">${ST[t.status]}</span>`}
-  ${(isLead()||t.createdBy===me.uid)?`<button class="d" onclick="delTask('${t.id}')">Xóa</button>`:""}</div></div>`}).join("")||'<div class="card">Không có công việc.</div>';
+ const mine=tasks.filter(t=>t.assignee===me.uid).sort((a,b)=>(a.status==2)-(b.status==2)||(a.due||"9").localeCompare(b.due||"9"));
+ $("s1").textContent=mine.filter(t=>t.status<2).length;$("s2").textContent=mine.filter(t=>t.status==2).length;$("s3").textContent=mine.filter(isLate).length;
+ $("list").innerHTML=mine.map(t=>{const can=isLead()||t.createdBy===me.uid;
+  return `<div class="card task ${isLate(t)?"late":""} ${t.status==2?"done":""}"><div class="t">${esc(t.title)} ${t.priority?'<span class="cao">● Ưu tiên cao</span>':""}</div>
+  <div>${esc(t.desc)}</div><div class="m"><span class="tag">Hạn: ${vn(t.due)||"không"}${isLate(t)?" · QUÁ HẠN":""}</span></div>
+  <div class="row"><select onchange="setStatus('${t.id}',this.value)">${ST.map((x,i)=>`<option value="${i}" ${i==t.status?"selected":""}>${x}</option>`).join("")}</select>
+  ${can?`<button class="g s" onclick="openTask('${t.id}')">Sửa</button><button class="d" onclick="delTask('${t.id}')">Xóa</button>`:""}</div></div>`}).join("")||'<div class="card">Bạn chưa có công việc. Bấm “Thêm việc” để bắt đầu.</div>';
+ if(!$("p1").classList.contains("hide"))renderStats();
+}
+function renderStats(){
+ const q=$("q").value.trim().toLowerCase(),p=$("fp").value,s=$("fs").value,a=$("df").value,b=$("dt").value;
+ rows=tasks.filter(t=>(!q||(t.title+" "+t.desc).toLowerCase().includes(q))&&(!p||t.assignee===p)&&(s===""||t.status==s)&&(!a||(t.due&&t.due>=a))&&(!b||(t.due&&t.due<=b)))
+  .sort((x,y)=>(x.due||"9").localeCompare(y.due||"9"));
+ $("sum").textContent=`${rows.length} công việc: ${rows.filter(t=>t.status==2).length} hoàn thành, ${rows.filter(t=>t.status<2).length} chưa xong, ${rows.filter(isLate).length} quá hạn`;
+ $("tb").innerHTML="<tr><th>#</th><th>Nội dung</th><th>Người thực hiện</th><th>Hạn</th><th>Trạng thái</th></tr>"+rows.map((t,i)=>`<tr><td>${i+1}</td><td>${esc(t.title)}</td><td>${esc(name(t.assignee))}</td><td>${vn(t.due)}</td><td>${ST[t.status]}${isLate(t)?" (quá hạn)":""}</td></tr>`).join("");
+}
+function exXlsx(){
+ if(typeof XLSX==="undefined")return alert("Chưa tải được thư viện Excel. Kiểm tra kết nối mạng.");
+ const d=[["STT","Nội dung","Mô tả","Người thực hiện","Hạn hoàn thành","Ưu tiên","Trạng thái"],...rows.map((t,i)=>[i+1,t.title,t.desc,name(t.assignee),vn(t.due),t.priority?"Cao":"Thường",ST[t.status]+(isLate(t)?" (quá hạn)":"")])];
+ const ws=XLSX.utils.aoa_to_sheet(d);ws["!cols"]=[{wch:5},{wch:40},{wch:40},{wch:22},{wch:14},{wch:10},{wch:18}];
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Công việc");XLSX.writeFile(wb,"cong-viec-"+today()+".xlsx");
+}
+function exDoc(){
+ const v=i=>esc($("w"+i).value.trim()),n=new Date(),dd=v(3)||".........";
+ const body=rows.map((t,i)=>`<tr><td align=center>${i+1}</td><td>${esc(t.title)}</td><td>${esc(name(t.assignee))}</td><td align=center>${vn(t.due)}</td><td>${ST[t.status]}${isLate(t)?" (quá hạn)":""}</td></tr>`).join("");
+ const h=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>
+ @page Section1{size:21cm 29.7cm;margin:2cm 2cm 2cm 3cm}div.Section1{page:Section1}body{font-family:"Times New Roman";font-size:14pt}
+ p{margin:0;line-height:1.3}table.t{border-collapse:collapse;width:100%}table.t td,table.t th{border:1px solid #000;padding:4px;font-size:13pt}</style></head><body><div class="Section1">
+ <table width="100%"><tr><td width="40%" align=center style="font-size:13pt"><p>${v(1)}</p><p><b>${v(2)}</b></p><p>_______</p><p style="margin-top:6pt">Số: ....../BC-......</p></td>
+ <td width="60%" align=center><p><b>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</b></p><p><b>Độc lập - Tự do - Hạnh phúc</b></p><p>________________</p><p style="margin-top:6pt"><i>${dd}, ngày ${n.getDate()} tháng ${n.getMonth()+1} năm ${n.getFullYear()}</i></p></td></tr></table>
+ <p align=center style="margin-top:16pt"><b>BÁO CÁO</b></p><p align=center><b>Kết quả thực hiện công việc</b></p><p align=center>________</p><br>
+ <p style="text-indent:1cm;text-align:justify">Căn cứ danh sách nhiệm vụ được giao, ${v(2)||"đơn vị"} báo cáo kết quả thực hiện như sau: tổng số ${rows.length} công việc, trong đó ${rows.filter(t=>t.status==2).length} công việc đã hoàn thành, ${rows.filter(t=>t.status<2).length} công việc đang thực hiện, ${rows.filter(isLate).length} công việc quá hạn.</p><br>
+ <table class="t"><tr><th>STT</th><th>Nội dung công việc</th><th>Người thực hiện</th><th>Hạn hoàn thành</th><th>Tình hình thực hiện</th></tr>${body}</table><br>
+ <table width="100%"><tr><td width="55%" valign=top style="font-size:12pt"><p><b><i>Nơi nhận:</i></b></p><p>- ......;</p><p>- Lưu: VT.</p></td>
+ <td width="45%" align=center><p><b>${v(4)||"NGƯỜI BÁO CÁO"}</b></p><p><i>(Ký, ghi rõ họ tên)</i></p><br><br><br><p><b>${v(5)}</b></p></td></tr></table></div></body></html>`;
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+h],{type:"application/msword"}));a.download="bao-cao-cong-viec-"+today()+".doc";a.click();
+ ["w1","w2","w3","w4","w5"].forEach((k,i)=>ls(k,$(k).value));
 }
 function fillUsers(){
- const o=users.map(u=>`<option value="${u.id}">${esc(u.name)} (${R[u.role]})</option>`).join("");
- const keep=$("fp").value; $("fp").innerHTML='<option value="">Mọi người</option>'+o; $("fp").value=keep; const oa=isLead()?o:users.filter(u=>u.id===me.uid).map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join(""); const ka=$("a").value; $("a").innerHTML=oa; $("a").value=ka||me.uid; }
-
+ const o=users.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join(""),k=$("fp").value;
+ $("fp").innerHTML='<option value="">Cả đội</option>'+o;$("fp").value=k;
+ $("avs").innerHTML=AV.map((x,i)=>`<span class="av ${me.avatar===x?"on":""}" onclick="setAv(${i})">${x}</span>`).join("");
+}
 auth.onAuthStateChanged(async u=>{
  unsub.forEach(f=>f());unsub=[];
  if(!u){$("login").classList.remove("hide");$("app").classList.add("hide");$("who").textContent="";return}
  const d=await db.collection("users").doc(u.uid).get();
  if(!d.exists){await auth.signOut();return}
  me={uid:u.uid,...d.data()};
- $("login").classList.add("hide");$("app").classList.remove("hide");
- $("lead").classList.toggle("hide",!isLead());
- $("who").textContent=me.name+" – "+R[me.role];
+ $("login").classList.add("hide");$("app").classList.remove("hide");$("lead").classList.toggle("hide",!isLead());
+ ["w1","w2","w3","w4","w5"].forEach(k=>$(k).value=ls(k)||"");
+ const hdr=()=>$("who").innerHTML=`<span class="av">${me.avatar||"👤"}</span><span>${esc(me.name)} · ${R[me.role]}</span>`;hdr();
+ unsub.push(db.collection("users").doc(u.uid).onSnapshot(s=>{if(s.exists){me={uid:u.uid,...s.data()};hdr();fillUsers()}}));
  unsub.push(db.collection("users").onSnapshot(s=>{users=s.docs.map(x=>({id:x.id,...x.data()}));fillUsers();render()}));
  unsub.push(db.collection("tasks").onSnapshot(s=>{tasks=s.docs.map(x=>({id:x.id,...x.data()}));render()}));
 });
