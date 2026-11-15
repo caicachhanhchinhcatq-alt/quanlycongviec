@@ -41,7 +41,7 @@ nav button span{display:block;font-size:20px}nav button.on{color:var(--ac);text-
 @media(min-width:760px){body{padding-bottom:0}nav{position:sticky;top:57px;bottom:auto;border-top:0;border-bottom:1px solid var(--bd)}nav button span{display:inline;margin-right:6px}nav button{font-size:14px}}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}th{color:var(--ac)}
 .sc{overflow-x:auto}
-dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:var(--tx);width:min(520px,94vw);padding:16px}dialog::backdrop{background:#000a}
+dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:var(--tx);width:min(520px,94vw);padding:16px}dialog::backdrop{background:#000a}dialog{max-height:92vh;overflow:auto}.chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0}.mic{padding:8px 12px}.sgi{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--bd)}.sgi small{color:var(--mu)}
 .avs{display:flex;gap:8px;flex-wrap:wrap}.avs .av{cursor:pointer;width:42px;height:42px}.avs .av.on{background:var(--ac)}
 </style></head><body data-t="teal">
 <header><b>QUẢN LÝ CÔNG VIỆC ĐỘI CÔNG TÁC</b><span id="who"></span></header>
@@ -49,7 +49,7 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
 <div id="login" class="card hide" style="max-width:420px;margin:40px auto">
  <h3>Đăng nhập</h3>
  <input id="lu" placeholder="Tên đăng nhập (không dấu, không cách)"><input id="lp" type="password" placeholder="Mật khẩu (từ 6 ký tự)">
- <div class="row"><button onclick="login()">Đăng nhập</button><button class="g s" onclick="firstSetup()">Tạo tài khoản đội trưởng đầu tiên</button></div>
+ <div class="row"><button onclick="login()">Đăng nhập</button></div>
  <p id="err"></p>
 </div>
 <div id="app" class="hide">
@@ -82,6 +82,10 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
   <div class="card"><h3>Đổi mật khẩu</h3>
    <input id="po" type="password" placeholder="Mật khẩu hiện tại"><input id="pn" type="password" placeholder="Mật khẩu mới (từ 6 ký tự)">
    <button onclick="chPass()">Đổi mật khẩu</button> <span id="pm"></span></div>
+  <div id="gm" class="card hide"><h3>AI Gemini (gợi ý việc từ ảnh công văn)</h3>
+   <input id="gk" type="password" placeholder="API key Gemini"><input id="gn" placeholder="Tên model (để trống = gemini-3.5-flash)">
+   <button onclick="saveGem()">Lưu</button> <span id="gmsg"></span>
+   <p style="font-size:12px;color:var(--mu);margin:8px 0 0">Key dùng chung cho cả đội. Nên giới hạn key theo tên miền trang web trong Google Cloud. Không dùng cho văn bản mật: ảnh được gửi tới Google để xử lý.</p></div>
   <div id="lead" class="card hide"><h3>Tạo tài khoản thành viên</h3>
    <div class="row"><input id="nu" placeholder="Tên đăng nhập"><input id="nn" placeholder="Họ tên"><input id="np" placeholder="Mật khẩu ban đầu">
    <select id="nr"><option value="canbo">Cán bộ</option><option value="doipho">Đội phó</option><option value="doitruong">Đội trưởng</option></select></div>
@@ -92,10 +96,16 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
 </main>
 
 <dialog id="dlg"><h3 id="dt0">Thêm công việc</h3>
- <input id="t" placeholder="Tiêu đề"><textarea id="d" placeholder="Mô tả" rows="3"></textarea>
- <div class="row"><select id="a"></select><input id="due" type="date"></div>
- <div class="row"><select id="pr"><option value="0">Ưu tiên thường</option><option value="1">Ưu tiên cao</option></select>
- <select id="st"><option value="0">Chưa làm</option><option value="1">Đang làm</option><option value="2">Hoàn thành</option></select></div>
+ <div class="row" style="margin-bottom:6px"><button class="g" onclick="$('cam').click()">📷 Chụp / chọn ảnh công văn, AI gợi ý việc</button><input id="cam" type="file" accept="image/*" class="hide" onchange="scanDoc(this.files[0]);this.value=''"></div>
+ <div id="sg" class="hide card" style="padding:10px"></div>
+ <div class="row"><input id="t" placeholder="Tiêu đề (gõ hoặc bấm 🎤 để nói)"><button class="g mic" onclick="dictate('t',this)">🎤</button></div>
+ <div class="row"><textarea id="d" placeholder="Mô tả" rows="2"></textarea><button class="g mic" onclick="dictate('d',this)">🎤</button></div>
+ <div style="margin-top:6px;color:var(--mu)">Hạn hoàn thành: <b id="dl" style="color:var(--tx)"></b></div>
+ <input id="due" type="date" onchange="dueLbl()" onclick="try{this.showPicker()}catch(e){}">
+ <div class="chips"><button class="g s" onclick="setDue(0)">Hôm nay</button><button class="g s" onclick="setDue(1)">Ngày mai</button><button class="g s" onclick="setDue(3)">3 ngày</button><button class="g s" onclick="setDue(7)">1 tuần</button><button class="g s" onclick="setDue('m')">Cuối tháng</button></div>
+ <div id="ra" class="row"><select id="a"></select></div>
+ <label style="display:flex;gap:8px;align-items:center;margin:8px 0"><input id="pr" type="checkbox" style="width:auto;margin:0"> Ưu tiên cao</label>
+ <div id="rs" class="hide"><select id="st"><option value="0">Chưa làm</option><option value="1">Đang làm</option><option value="2">Hoàn thành</option></select></div>
  <div class="row" style="margin-top:8px"><button onclick="saveTask()">Lưu</button><button class="g" onclick="dlg.close()">Hủy</button></div>
 </dialog>
 
@@ -120,7 +130,7 @@ if(location.protocol==="file:"){
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.firestore();
 const R={doitruong:"Đội trưởng",doipho:"Đội phó",canbo:"Cán bộ"}, ST=["Chưa làm","Đang làm","Hoàn thành"], AV=["👮","🦅","🛡️","⭐","🚀","🐯","🦁","🐉"];
-let me=null, users=[], tasks=[], unsub=[], editId=null, rows=[];
+let gem={}, sug=[], rec=null, me=null, users=[], tasks=[], unsub=[], editId=null, rows=[];
 const $=id=>document.getElementById(id), email=u=>u.trim().toLowerCase()+"@doi.local";
 const isLead=()=>me&&me.role!=="canbo";
 const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -136,14 +146,6 @@ function tab(i){[0,1,2].forEach(k=>{$("p"+k).classList.toggle("hide",k!==i);$("n
 
 function login(){ $("err").textContent="";
  auth.signInWithEmailAndPassword(email($("lu").value),$("lp").value).catch(()=>$("err").textContent="Sai tên đăng nhập hoặc mật khẩu."); }
-async function firstSetup(){
- const u=$("lu").value,p=$("lp").value; if(!u||p.length<6){$("err").textContent="Nhập tên đăng nhập và mật khẩu từ 6 ký tự.";return}
- try{ const c=await auth.createUserWithEmailAndPassword(email(u),p);
-  const n=await db.collection("users").limit(1).get();
-  if(!n.empty){await c.user.delete();$("err").textContent="Hệ thống đã có tài khoản, hãy nhờ đội trưởng tạo cho bạn.";return}
-  await db.collection("users").doc(c.user.uid).set({name:u,username:u,role:"doitruong"});
-  location.reload();
- }catch(e){$("err").textContent=e.message}}
 async function addUser(){
  const u=$("nu").value.trim(),n=$("nn").value.trim(),p=$("np").value; if(!u||!n||p.length<6){$("um").textContent="Cần tên đăng nhập, họ tên, mật khẩu ≥ 6 ký tự.";return}
  const sec=firebase.initializeApp(firebaseConfig,"sec"+Date.now());
@@ -160,18 +162,64 @@ async function chPass(){
  }catch(e){m.textContent="Mật khẩu hiện tại không đúng hoặc mật khẩu mới không hợp lệ."}}
 function setAv(i){db.collection("users").doc(me.uid).update({avatar:AV[i]}).catch(()=>alert("Chưa lưu được ảnh đại diện. Cần cập nhật Firestore rules (xem hướng dẫn)."))}
 
+const dayStr=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toLocaleDateString("sv-SE")};
+function setDue(n){const d=new Date();if(n==="m")d.setMonth(d.getMonth()+1,0);else d.setDate(d.getDate()+n);$("due").value=d.toLocaleDateString("sv-SE");dueLbl()}
+function dueLbl(){$("dl").textContent=$("due").value?new Date($("due").value+"T00:00").toLocaleDateString("vi-VN",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"}):"chưa chọn"}
 function openTask(id){
  editId=id||null; const t=tasks.find(x=>x.id===id)||{title:"",desc:"",assignee:me.uid,due:"",priority:0,status:0};
  $("dt0").textContent=id?"Sửa công việc":"Thêm công việc";
- $("t").value=t.title;$("d").value=t.desc;$("due").value=t.due;$("pr").value=t.priority;$("st").value=t.status;
- $("a").innerHTML=(isLead()?users:users.filter(u=>u.id===me.uid)).map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join("");
- $("a").value=t.assignee; $("a").disabled=!!id&&!isLead(); dlg.showModal(); }
+ $("t").value=t.title;$("d").value=t.desc;$("due").value=t.due;$("pr").checked=!!t.priority;$("st").value=t.status;
+ const o=isLead()?users:users.filter(u=>u.id===me.uid);
+ $("a").innerHTML=o.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join("");$("a").value=t.assignee;
+ $("ra").classList.toggle("hide",o.length<2||(!!id&&!isLead()));$("rs").classList.toggle("hide",!id);
+ $("sg").classList.add("hide");$("sg").innerHTML="";dueLbl();dlg.showModal(); }
 async function saveTask(){
  if(!$("t").value.trim()) return alert("Cần nhập tiêu đề.");
- const f={title:$("t").value.trim(),desc:$("d").value,assignee:$("a").value,due:$("due").value,priority:+$("pr").value,status:+$("st").value};
+ const f={title:$("t").value.trim(),desc:$("d").value,assignee:$("a").value,due:$("due").value,priority:$("pr").checked?1:0,status:editId?+$("st").value:0};
  try{ if(editId) await db.collection("tasks").doc(editId).update(f);
   else await db.collection("tasks").add({...f,createdBy:me.uid,createdAt:Date.now()}); dlg.close();
  }catch(e){alert("Không lưu được: "+e.message)} }
+
+function parseDate(s){ s=s.toLowerCase();
+ if(/hôm nay/.test(s))return dayStr(0); if(/ngày mai/.test(s))return dayStr(1); if(/ngày kia/.test(s))return dayStr(2);
+ const m=s.match(/(\d{1,2})\s*(?:\/|tháng)\s*(\d{1,2})/); if(!m)return "";
+ const y=new Date().getFullYear(); let d=new Date(y,m[2]-1,m[1]); if(d.getMonth()!=m[2]-1)return "";
+ if(d<new Date(new Date().toDateString()))d=new Date(y+1,m[2]-1,m[1]); return d.toLocaleDateString("sv-SE"); }
+function dictate(id,btn){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR)return alert("Trình duyệt này chưa hỗ trợ nhập bằng giọng nói. Hãy dùng Chrome hoặc Edge.");
+ if(rec){rec.stop();return}
+ rec=new SR();rec.lang="vi-VN";rec.interimResults=false;btn.textContent="⏹";
+ rec.onresult=e=>{const x=e.results[0][0].transcript.trim(),el=$(id);el.value=(el.value?el.value+" ":"")+x;
+  if(!$("due").value){const d=parseDate(x);if(d){$("due").value=d;dueLbl()}}};
+ rec.onend=()=>{rec=null;btn.textContent="🎤"}; rec.onerror=()=>{}; rec.start(); }
+
+const shrink=f=>new Promise((ok,no)=>{const im=new Image(),u=URL.createObjectURL(f);
+ im.onload=()=>{const k=Math.min(1,1800/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;
+  c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",.85).split(",")[1])};
+ im.onerror=()=>no(new Error("Không mở được ảnh"));im.src=u});
+async function scanDoc(f){
+ if(!f)return; const g=$("sg"); g.classList.remove("hide");
+ if(!gem.key){g.textContent="Chưa có API key Gemini. Nhờ đội trưởng hoặc đội phó nhập ở tab Cài đặt.";return}
+ g.textContent="⏳ AI đang đọc văn bản...";
+ const prompt=`Đây là ảnh một văn bản hành chính (công văn) của Việt Nam. Hãy đọc kỹ và đề xuất các nhiệm vụ mà đơn vị nhận cần thực hiện. Hôm nay là ${dayStr(0)}. Trả về JSON là một mảng, mỗi phần tử có: "title" (tên nhiệm vụ ngắn gọn, dưới 120 ký tự), "desc" (số, ký hiệu, trích yếu, cơ quan ban hành và yêu cầu chính), "due" (hạn hoàn thành dạng YYYY-MM-DD nếu văn bản nêu rõ, nếu không thì chuỗi rỗng). Không bịa thông tin không có trong văn bản.`;
+ try{ const b=await shrink(f);
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gem.model||"gemini-3.5-flash"}:generateContent`,{method:"POST",
+   headers:{"Content-Type":"application/json","x-goog-api-key":gem.key},
+   body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:"image/jpeg",data:b}},{text:prompt}]}],generationConfig:{responseMimeType:"application/json"}})});
+  const j=await r.json(); if(!r.ok)throw new Error((j.error&&j.error.message)||r.status);
+  sug=JSON.parse(j.candidates[0].content.parts.map(x=>x.text||"").join("").replace(/```json|```/g,"").trim()); if(!Array.isArray(sug))sug=[];
+  g.innerHTML=sug.length?sug.map((x,i)=>`<label class="sgi"><input type="checkbox" checked data-i="${i}" style="width:auto"><div><b>${esc(x.title)}</b><br><small>Hạn: ${vn(x.due)||"không nêu"} · ${esc(x.desc)}</small></div></label>`).join("")+'<button style="margin-top:8px" onclick="addSug()">＋ Thêm các việc đã chọn (giao cho tôi)</button>':"AI không tìm thấy nhiệm vụ rõ ràng trong ảnh.";
+ }catch(e){g.textContent="Không đọc được: "+e.message} }
+async function addSug(){
+ const ids=[...document.querySelectorAll("#sg input:checked")].map(x=>+x.dataset.i);
+ try{ for(const i of ids){const x=sug[i];await db.collection("tasks").add({title:String(x.title||"").slice(0,200),desc:String(x.desc||""),assignee:me.uid,
+  due:/^\d{4}-\d{2}-\d{2}$/.test(x.due)?x.due:"",priority:0,status:0,createdBy:me.uid,createdAt:Date.now()})} dlg.close();
+ }catch(e){alert("Không thêm được: "+e.message)} }
+async function saveGem(){ const m=$("gmsg");
+ const k=$("gk").value.trim()||gem.key||"";if(!k){m.textContent="Nhập API key.";return}
+ try{await db.collection("config").doc("gemini").set({key:k,model:$("gn").value.trim()||"gemini-3.5-flash"});
+  gem={key:k,model:$("gn").value.trim()||"gemini-3.5-flash"};$("gk").value="";m.className="ok";m.textContent="Đã lưu."}catch(e){m.className="";m.textContent="Không lưu được: "+e.message} }
 const setStatus=(id,s)=>db.collection("tasks").doc(id).update({status:+s});
 const delTask=id=>confirm("Xóa công việc này?")&&db.collection("tasks").doc(id).delete();
 
@@ -225,7 +273,8 @@ auth.onAuthStateChanged(async u=>{
  const d=await db.collection("users").doc(u.uid).get();
  if(!d.exists){await auth.signOut();return}
  me={uid:u.uid,...d.data()};
- $("login").classList.add("hide");$("app").classList.remove("hide");$("lead").classList.toggle("hide",!isLead());
+ $("login").classList.add("hide");$("app").classList.remove("hide");$("lead").classList.toggle("hide",!isLead());$("gm").classList.toggle("hide",!isLead());
+ db.collection("config").doc("gemini").get().then(x=>{gem=x.exists?x.data():{};$("gn").value=gem.model||"";$("gk").placeholder=gem.key?"Đã lưu (nhập key mới để thay)":"API key Gemini"}).catch(()=>{});
  ["w1","w2","w3","w4","w5"].forEach(k=>$(k).value=ls(k)||"");
  const hdr=()=>$("who").innerHTML=`<span class="av">${me.avatar||"👤"}</span><span>${esc(me.name)} · ${R[me.role]}</span>`;hdr();
  unsub.push(db.collection("users").doc(u.uid).onSnapshot(s=>{if(s.exists){me={uid:u.uid,...s.data()};hdr();fillUsers()}}));
