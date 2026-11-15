@@ -18,7 +18,7 @@ header{position:sticky;top:0;z-index:5;display:flex;justify-content:space-betwee
 header b{font-size:17px;letter-spacing:.3px;text-shadow:0 0 12px var(--ac)}
 body[data-t=light] header b{text-shadow:none}
 #who{font-size:13px;color:var(--mu);display:flex;align-items:center;gap:8px}
-.av{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:19px;border:1px solid var(--ac);box-shadow:0 0 10px var(--bd);background:var(--inb)}
+.av{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:16px;border:1px solid var(--ac);box-shadow:0 0 10px var(--bd);background:var(--inb)}
 main{position:relative;z-index:1;max-width:960px;margin:auto;padding:14px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px;backdrop-filter:blur(6px);box-shadow:0 0 18px rgba(0,0,0,.18)}
 h3{margin:0 0 10px;font-size:16px;color:var(--ac)}
@@ -43,18 +43,22 @@ body[data-t=light] .stat b{text-shadow:none}
 .f.ok{border-color:#4ade80}.f.ok .v{color:#4ade80}.f.s1{border-color:#60a5fa;background:rgba(96,165,250,.14)}.f.s2{border-color:#4ade80;background:rgba(74,222,128,.14)}
 body[data-t=light] .f.late .v{color:#b91c1c}body[data-t=light] .f.soon .v{color:#92400e}body[data-t=light] .f.ok .v{color:#15803d}
 input,select,textarea{font-size:16px}input::placeholder,textarea::placeholder{color:var(--mu);opacity:.85}
-.mic{align-self:flex-start;margin-top:3px}.pv{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.pv div{position:relative}
+.lh{display:flex;justify-content:space-between;align-items:flex-end;margin-top:12px}.lh .lb{margin:0}
+.mic{padding:3px 10px;font-size:13px;margin:0;min-width:0}.hint{font-size:11px;color:var(--mu);margin:2px 0 0}
+.big{font-size:17px;line-height:1.45;padding:11px 12px;resize:vertical}
+input[type=date]{display:block;width:100%;min-width:0;max-width:100%;height:46px;-webkit-appearance:none;appearance:none;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left}.pv{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.pv div{position:relative}
 .pv img{width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--bd)}
 .pv b{position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:50%;width:20px;height:20px;font-size:13px;text-align:center;line-height:20px;cursor:pointer}
 .tag{font-size:12px;padding:2px 9px;border-radius:10px;border:1px solid var(--bd);background:var(--inb)}.cao{color:#f87171;font-weight:700}
 .hide{display:none!important}#err,#pm,#um{color:#f87171;font-size:14px}.ok{color:var(--ac)!important}
 nav{position:fixed;bottom:0;left:0;right:0;z-index:6;display:flex;background:var(--card);backdrop-filter:blur(10px);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom)}
 nav button{flex:1;background:none;color:var(--mu);border-radius:0;padding:10px 4px;font-size:12px;font-weight:500}
-nav button span{display:block;font-size:20px}nav button.on{color:var(--ac);text-shadow:0 0 10px var(--ac)}
+nav button span{display:block;font-size:17px}nav button.on{color:var(--ac);text-shadow:0 0 10px var(--ac)}
 @media(min-width:760px){body{padding-bottom:0}nav{position:sticky;top:57px;bottom:auto;border-top:0;border-bottom:1px solid var(--bd)}nav button span{display:inline;margin-right:6px}nav button{font-size:14px}}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}th{color:var(--ac)}
 .sc{overflow-x:auto}
-dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:var(--tx);width:min(520px,94vw);padding:16px}dialog::backdrop{background:#000a}dialog{max-height:92vh;overflow:auto}.chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0}.mic{padding:8px 12px}.sgi{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--bd)}.sgi small{color:var(--mu)}
+dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:var(--tx);width:min(680px,96vw);padding:16px}dialog::backdrop{background:#000a}dialog{max-height:92vh;overflow:auto}.chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0}.sgi{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--bd)}.sgi small{color:var(--mu)}
 .avs{display:flex;gap:8px;flex-wrap:wrap}.avs .av{cursor:pointer;width:42px;height:42px}.avs .av.on{background:var(--ac)}
 </style></head><body data-t="teal">
 <header><b>QUẢN LÝ CÔNG VIỆC ĐỘI CÔNG TÁC</b><span id="who"></span></header>
@@ -109,15 +113,16 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
 </main>
 
 <dialog id="dlg"><h3 id="dt0">Thêm công việc</h3>
- <button class="g" onclick="$('cam').click()">📷 Thêm ảnh công văn (chụp hoặc chọn nhiều trang)</button>
+ <button class="g" style="width:100%;white-space:nowrap;font-size:14px;padding:9px 6px" onclick="$('cam').click()">📷 Ảnh công văn (nhiều trang)</button>
  <input id="cam" type="file" accept="image/*" multiple class="hide" onchange="addPics(this.files);this.value=''">
  <div id="pv" class="pv"></div>
  <button id="go" class="hide" onclick="scanDoc()">🤖 AI đọc <span id="gn0">0</span> ảnh và gợi ý việc</button>
  <div id="sg" class="hide card" style="padding:10px;margin-top:8px"></div>
- <label class="lb">Tên nhiệm vụ</label>
- <div class="row"><input id="t" placeholder="VD: Xây dựng báo cáo kết quả quý III"><button class="g mic" onclick="dictate('t',this)">🎤</button></div>
- <label class="lb">Nội dung / căn cứ</label>
- <div class="row"><textarea id="d" placeholder="VD: Theo Công văn số ... ngày ..." rows="2"></textarea><button class="g mic" onclick="dictate('d',this)">🎤</button></div>
+ <div class="lh"><label class="lb">Tên nhiệm vụ</label><button class="g mic" onclick="dictate('t',this)">🎤 Nói</button></div>
+ <textarea id="t" class="big" rows="2" placeholder="VD: Xây dựng báo cáo kết quả quý III"></textarea>
+ <div class="hint">Bấm “Nói” rồi đọc; nói kèm “ngày mai”, “20/11” sẽ tự điền hạn.</div>
+ <div class="lh"><label class="lb">Nội dung / căn cứ</label><button class="g mic" onclick="dictate('d',this)">🎤 Nói</button></div>
+ <textarea id="d" class="big" rows="4" placeholder="VD: Theo Công văn số ... ngày ..."></textarea>
  <label class="lb">Hạn hoàn thành: <b id="dl" style="color:var(--tx);font-size:14px;text-transform:none"></b></label>
  <input id="due" type="date" onchange="dueLbl()" onclick="try{this.showPicker()}catch(e){}">
  <div class="chips"><button class="g s" onclick="setDue(0)">Hôm nay</button><button class="g s" onclick="setDue(1)">Ngày mai</button><button class="g s" onclick="setDue(3)">3 ngày</button><button class="g s" onclick="setDue(7)">1 tuần</button><button class="g s" onclick="setDue('m')">Cuối tháng</button></div>
@@ -193,7 +198,7 @@ function openTask(id){
  pics=[];renderPics();$("sg").classList.add("hide");$("sg").innerHTML="";dueLbl();dlg.showModal(); }
 async function saveTask(){
  if(!$("t").value.trim()) return alert("Cần nhập tiêu đề.");
- const f={title:$("t").value.trim(),desc:$("d").value,assignee:$("a").value,due:$("due").value,priority:$("pr").checked?1:0,status:editId?+$("st").value:0};
+ const f={title:$("t").value.replace(/\s*\n\s*/g," ").trim(),desc:$("d").value,assignee:$("a").value,due:$("due").value,priority:$("pr").checked?1:0,status:editId?+$("st").value:0};
  try{ if(editId) await db.collection("tasks").doc(editId).update(f);
   else await db.collection("tasks").add({...f,createdBy:me.uid,createdAt:Date.now()}); dlg.close();
  }catch(e){alert("Không lưu được: "+e.message)} }
@@ -207,10 +212,10 @@ function dictate(id,btn){
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!SR)return alert("Trình duyệt này chưa hỗ trợ nhập bằng giọng nói. Hãy dùng Chrome hoặc Edge.");
  if(rec){rec.stop();return}
- rec=new SR();rec.lang="vi-VN";rec.interimResults=false;btn.textContent="⏹";
+ rec=new SR();rec.lang="vi-VN";rec.interimResults=false;btn.textContent="⏹ Dừng";
  rec.onresult=e=>{const x=e.results[0][0].transcript.trim(),el=$(id);el.value=(el.value?el.value+" ":"")+x;
   if(!$("due").value){const d=parseDate(x);if(d){$("due").value=d;dueLbl()}}};
- rec.onend=()=>{rec=null;btn.textContent="🎤"}; rec.onerror=()=>{}; rec.start(); }
+ rec.onend=()=>{rec=null;btn.textContent="🎤 Nói"}; rec.onerror=()=>{}; rec.start(); }
 
 const shrink=f=>new Promise((ok,no)=>{const im=new Image(),u=URL.createObjectURL(f);
  im.onload=()=>{const k=Math.min(1,1500/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;
