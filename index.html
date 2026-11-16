@@ -17,7 +17,8 @@ body[data-t=light]::before,body[data-t=light]::after{opacity:.08}
 header{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:var(--card);backdrop-filter:blur(8px);border-bottom:1px solid var(--bd)}
 header b{font-size:17px;letter-spacing:.3px;text-shadow:0 0 12px var(--ac)}
 body[data-t=light] header b{text-shadow:none}
-#who{font-size:13px;color:var(--mu);display:flex;align-items:center;gap:8px}
+#who{font-size:13px;color:var(--mu);display:flex;align-items:center;gap:8px;position:relative;cursor:pointer}
+.menu{position:absolute;right:0;top:calc(100% + 8px);z-index:20;min-width:170px;background:var(--bg);border:1px solid var(--ac);border-radius:10px;padding:6px;box-shadow:0 6px 20px #0008}.menu button{display:block;width:100%;text-align:left;background:none;color:var(--tx);padding:10px;margin:0;border:0;font-weight:500}.menu button:hover{background:var(--inb)}
 .av{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:16px;border:1px solid var(--ac);box-shadow:0 0 10px var(--bd);background:var(--inb)}
 main{position:relative;z-index:1;max-width:960px;margin:auto;padding:14px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px;backdrop-filter:blur(6px);box-shadow:0 0 18px rgba(0,0,0,.18)}
@@ -87,9 +88,12 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
   </div>
   <div class="card"><div id="sum" style="margin-bottom:8px;color:var(--mu)"></div><div class="sc"><table id="tb"></table></div></div>
   <div class="card"><h3>Xuất báo cáo (theo kết quả tra cứu)</h3>
-   <div class="row"><input id="w1" placeholder="Cơ quan chủ quản (VD: CÔNG AN TỈNH ...)"><input id="w2" placeholder="Tên đơn vị (VD: ĐỘI ...)"></div>
-   <div class="row"><input id="w3" placeholder="Địa danh (VD: Hà Giang)"><input id="w4" placeholder="Chức vụ người ký (VD: ĐỘI TRƯỞNG)"><input id="w5" placeholder="Họ tên người ký"></div>
+   <div class="row"><input id="w1" placeholder="Cơ quan chủ quản"><input id="w2" placeholder="Tên đơn vị (VD: ĐỘI ...)"></div>
+   <div class="row"><input id="w3" placeholder="Địa danh"><input id="w4" placeholder="Chức vụ người ký"><input id="w5" placeholder="Họ tên người ký"><input id="w6" placeholder="Tên ngắn (VD: Đội 6)"></div>
    <div class="row"><button onclick="exXlsx()">⬇ Xuất Excel</button><button class="g" onclick="exDoc()">⬇ Xuất Word</button></div>
+   <label class="lb" style="margin-top:16px">Báo cáo tuần (cả đội, không theo bộ lọc)</label>
+   <div class="row"><label>Từ ngày <input id="wf" type="date"></label><label>đến ngày <input id="wt" type="date"></label></div>
+   <button onclick="exWeek()">⬇ Xuất báo cáo tuần (Excel)</button>
    <p style="font-size:12px;color:var(--mu);margin:8px 0 0">Word theo thể thức Nghị định 30/2020/NĐ-CP: quốc hiệu, tiêu ngữ, tên cơ quan, tiêu đề, bảng, nơi nhận, chữ ký. Số và ngày ban hành điền thêm sau khi mở file.</p></div>
  </section>
 
@@ -107,8 +111,7 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
    <div class="row"><input id="nu" placeholder="Tên đăng nhập"><input id="nn" placeholder="Họ tên"><input id="np" placeholder="Mật khẩu ban đầu">
    <select id="nr"><option value="canbo">Cán bộ</option><option value="doipho">Đội phó</option><option value="doitruong">Đội trưởng</option></select></div>
    <button onclick="addUser()">Tạo tài khoản</button> <span id="um"></span></div>
-  <button class="g" onclick="auth.signOut()">Đăng xuất</button>
- </section>
+   </section>
 </div>
 </main>
 
@@ -128,14 +131,26 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
  <div class="chips"><button class="g s" onclick="setDue(0)">Hôm nay</button><button class="g s" onclick="setDue(1)">Ngày mai</button><button class="g s" onclick="setDue(3)">3 ngày</button><button class="g s" onclick="setDue(7)">1 tuần</button><button class="g s" onclick="setDue('m')">Cuối tháng</button></div>
  <div id="ra"><label class="lb">Người thực hiện</label><select id="a"></select></div>
  <label style="display:flex;gap:8px;align-items:center;margin:12px 0"><input id="pr" type="checkbox" style="width:auto;margin:0"> Ưu tiên cao</label>
- <div id="rs" class="hide"><label class="lb">Tình trạng</label><select id="st"><option value="0">Chưa làm</option><option value="1">Đang làm</option><option value="2">Hoàn thành</option></select></div>
  <div class="row" style="margin-top:10px"><button onclick="saveTask()">Lưu</button><button class="g" onclick="dlg.close()">Hủy</button></div>
 </dialog>
 
+<dialog id="rdlg"><h3>Kết quả thực hiện</h3>
+ <div id="rt" style="font-weight:600;margin-bottom:8px"></div>
+ <button class="g" style="width:100%;white-space:nowrap;font-size:14px;padding:9px 6px" onclick="setRes('Hoàn thành đúng quy định')">✅ Hoàn thành đúng quy định</button>
+ <button class="g" style="width:100%;white-space:nowrap;font-size:14px;padding:9px 6px;margin-top:6px" onclick="$('rcam').click()">📷 Ảnh văn bản kết quả (trang đầu hoặc cả bộ)</button>
+ <input id="rcam" type="file" accept="image/*" multiple class="hide" onchange="addRPics(this.files);this.value=''">
+ <div id="rpv" class="pv"></div>
+ <button id="rgo" class="hide" onclick="scanRes()">🤖 AI đọc <span id="rn0">0</span> ảnh và ghi kết quả</button>
+ <div id="rsg" class="hint" style="font-size:13px"></div>
+ <label class="lb">Kết quả</label>
+ <textarea id="rr" class="big" rows="4" placeholder="VD: Đã gửi Báo cáo số .../BC-... ngày ... về Sở Tư pháp"></textarea>
+ <div class="row" style="margin-top:10px"><button onclick="saveRes()">Lưu</button><button class="g" onclick="rdlg.close()">Hủy</button></div>
+</dialog>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyCGo-yt3pX7Ram35QMZysGEF90FRtOiOt8",
@@ -191,16 +206,16 @@ function dueLbl(){$("dl").textContent=$("due").value?new Date($("due").value+"T0
 function openTask(id){
  editId=id||null; const t=tasks.find(x=>x.id===id)||{title:"",desc:"",assignee:me.uid,due:"",priority:0,status:0};
  $("dt0").textContent=id?"Sửa công việc":"Thêm công việc";
- $("t").value=t.title;$("d").value=t.desc;$("due").value=t.due;$("pr").checked=!!t.priority;$("st").value=t.status;
+ $("t").value=t.title;$("d").value=t.desc;$("due").value=t.due;$("pr").checked=!!t.priority;
  const o=isLead()?users:users.filter(u=>u.id===me.uid);
  $("a").innerHTML=o.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join("");$("a").value=t.assignee;
- $("ra").classList.toggle("hide",o.length<2||(!!id&&!isLead()));$("rs").classList.toggle("hide",!id);
+ $("ra").classList.toggle("hide",o.length<2||(!!id&&!isLead()));
  pics=[];renderPics();$("sg").classList.add("hide");$("sg").innerHTML="";dueLbl();dlg.showModal(); }
 async function saveTask(){
  if(!$("t").value.trim()) return alert("Cần nhập tiêu đề.");
- const f={title:$("t").value.replace(/\s*\n\s*/g," ").trim(),desc:$("d").value,assignee:$("a").value,due:$("due").value,priority:$("pr").checked?1:0,status:editId?+$("st").value:0};
+ const f={title:$("t").value.replace(/\s*\n\s*/g," ").trim(),desc:$("d").value,assignee:$("a").value,due:$("due").value,priority:$("pr").checked?1:0};
  try{ if(editId) await db.collection("tasks").doc(editId).update(f);
-  else await db.collection("tasks").add({...f,createdBy:me.uid,createdAt:Date.now()}); dlg.close();
+  else await db.collection("tasks").add({...f,status:0,createdBy:me.uid,createdAt:Date.now()}); dlg.close();
  }catch(e){alert("Không lưu được: "+e.message)} }
 
 function parseDate(s){ s=s.toLowerCase();
@@ -258,7 +273,35 @@ async function saveGem(){ const m=$("gmsg");
  const k=$("gk").value.trim()||gem.key||"";if(!k){m.textContent="Nhập API key.";return}
  try{await db.collection("config").doc("gemini").set({key:k,model:$("gn").value.trim()||"gemini-3.5-flash"});
   gem={key:k,model:$("gn").value.trim()||"gemini-3.5-flash"};$("gk").value="";m.className="ok";m.textContent="Đã lưu."}catch(e){m.className="";m.textContent="Không lưu được: "+e.message} }
-const setStatus=(id,s)=>db.collection("tasks").doc(id).update({status:+s});
+let resId=null, rpics=[];
+const setStatus=(id,s)=>{ if(+s===2){openResult(id);return} db.collection("tasks").doc(id).update({status:+s}).catch(e=>alert("Không lưu được: "+e.message)) };
+function openResult(id){ resId=id; const t=tasks.find(x=>x.id===id); $("rt").textContent=t.title; $("rr").value=t.result||""; rpics=[];renderRPics();$("rsg").textContent="";rdlg.showModal() }
+const setRes=v=>{$("rr").value=v};
+async function saveRes(){
+ const v=$("rr").value.trim(); if(!v)return alert("Hãy nhập kết quả hoặc bấm “Hoàn thành đúng quy định”.");
+ const t=tasks.find(x=>x.id===resId),f={status:2,result:v}; if(t.status!==2||!t.doneAt)f.doneAt=Date.now();
+ try{await db.collection("tasks").doc(resId).update(f);rdlg.close()}catch(e){alert("Không lưu được: "+e.message)} }
+function renderRPics(){
+ $("rpv").innerHTML=rpics.map((b,i)=>`<div><img src="data:image/jpeg;base64,${b}"><b onclick="rmRPic(${i})">×</b></div>`).join("");
+ $("rgo").classList.toggle("hide",!rpics.length);$("rn0").textContent=rpics.length}
+const rmRPic=i=>{rpics.splice(i,1);renderRPics()};
+async function addRPics(fs){
+ for(const f of [...fs]){ if(rpics.length>=10){alert("Tối đa 10 ảnh một lần.");break}
+  try{rpics.push(await shrink(f));renderRPics()}catch(e){alert(e.message)} } }
+async function scanRes(){
+ const g=$("rsg"),t=tasks.find(x=>x.id===resId);
+ if(!gem.key){g.textContent="Chưa có API key Gemini. Nhờ đội trưởng hoặc đội phó nhập ở tab Cài đặt.";return}
+ g.textContent="⏳ AI đang đọc "+rpics.length+" ảnh...";
+ const prompt=`Các ảnh là các trang của văn bản hoặc báo cáo mà đơn vị đã hoàn thành cho nhiệm vụ: "${t.title}". Hãy ghi KẾT QUẢ thực hiện bằng 1 đến 2 câu ngắn gọn (tối đa 300 ký tự), theo mẫu: "Đã [gửi/ban hành/trình/hoàn thành] [loại văn bản] số [số, ký hiệu] ngày [ngày ban hành] [gửi + nơi nhận, hoặc về + trích yếu]". Chỉ dùng thông tin nhìn thấy rõ trong ảnh, thông tin nào không thấy thì bỏ qua, không bịa. Trả về JSON dạng {"result": "..."}.`;
+ try{
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gem.model||"gemini-3.5-flash"}:generateContent`,{method:"POST",
+   headers:{"Content-Type":"application/json","x-goog-api-key":gem.key},
+   body:JSON.stringify({contents:[{parts:[...rpics.map(b=>({inline_data:{mime_type:"image/jpeg",data:b}})),{text:prompt}]}],generationConfig:{responseMimeType:"application/json"}})});
+  const j=await r.json(); if(!r.ok)throw new Error((j.error&&j.error.message)||r.status);
+  const o=JSON.parse(j.candidates[0].content.parts.map(x=>x.text||"").join("").replace(/```json|```/g,"").trim());
+  $("rr").value=String(o.result||"").trim(); g.textContent=$("rr").value?"Đã điền kết quả. Kiểm tra lại rồi bấm Lưu.":"AI không đọc được kết quả, hãy nhập tay."
+ }catch(e){g.textContent="Không đọc được: "+e.message} }
+rdlg.addEventListener("close",()=>{if(me)render()});
 const delTask=id=>confirm("Xóa công việc này?")&&db.collection("tasks").doc(id).delete();
 
 function dueInfo(t){
@@ -277,26 +320,26 @@ function render(){
   <div class="grid"><div class="f ${dc}"><label>Hạn hoàn thành</label><div class="v">${dt}</div></div>
   <div class="f"><label>Người thực hiện</label><div class="v">${esc(name(t.assignee))}</div></div>
   <div class="f s${t.status}"><label>Tình trạng</label><select onchange="setStatus('${t.id}',this.value)">${ST.map((x,i)=>`<option value="${i}" ${i==t.status?"selected":""}>${x}</option>`).join("")}</select></div>
-  ${t.createdBy&&t.createdBy!==t.assignee?`<div class="f"><label>Người giao</label><div class="v">${esc(name(t.createdBy))}</div></div>`:""}</div>
-  ${can?`<div class="row" style="margin-top:10px;justify-content:flex-end"><button class="g s" onclick="openTask('${t.id}')">Sửa</button><button class="d" onclick="delTask('${t.id}')">Xóa</button></div>`:""}</div>`}).join("")||'<div class="card">Bạn chưa có công việc. Bấm “Thêm việc” để bắt đầu.</div>';
+  ${t.createdBy&&t.createdBy!==t.assignee?`<div class="f"><label>Người giao</label><div class="v">${esc(name(t.createdBy))}</div></div>`:""}${t.status==2?`<div class="f ok" style="grid-column:1/-1"><label>Kết quả</label><div class="v" style="font-weight:500;white-space:pre-wrap">${t.result?esc(t.result):"Chưa ghi kết quả"}</div></div>`:""}</div>
+  <div class="row" style="margin-top:10px;justify-content:flex-end">${t.status==2?`<button class="g s" onclick="openResult('${t.id}')">${t.result?"Sửa kết quả":"Ghi kết quả"}</button>`:""}${can?`<button class="g s" onclick="openTask('${t.id}')">Sửa</button><button class="d" onclick="delTask('${t.id}')">Xóa</button>`:""}</div></div>`}).join("")||'<div class="card">Bạn chưa có công việc. Bấm “Thêm việc” để bắt đầu.</div>';
  if(!$("p1").classList.contains("hide"))renderStats();
 }
 function renderStats(){
  const q=$("q").value.trim().toLowerCase(),p=$("fp").value,s=$("fs").value,a=$("df").value,b=$("dt").value;
- rows=tasks.filter(t=>(!q||(t.title+" "+t.desc).toLowerCase().includes(q))&&(!p||t.assignee===p)&&(s===""||t.status==s)&&(!a||(t.due&&t.due>=a))&&(!b||(t.due&&t.due<=b)))
+ rows=tasks.filter(t=>(!q||(t.title+" "+t.desc+" "+(t.result||"")).toLowerCase().includes(q))&&(!p||t.assignee===p)&&(s===""||t.status==s)&&(!a||(t.due&&t.due>=a))&&(!b||(t.due&&t.due<=b)))
   .sort((x,y)=>(x.due||"9").localeCompare(y.due||"9"));
  $("sum").textContent=`${rows.length} công việc: ${rows.filter(t=>t.status==2).length} hoàn thành, ${rows.filter(t=>t.status<2).length} chưa xong, ${rows.filter(isLate).length} quá hạn`;
- $("tb").innerHTML="<tr><th>#</th><th>Nội dung</th><th>Người thực hiện</th><th>Hạn</th><th>Trạng thái</th></tr>"+rows.map((t,i)=>`<tr><td>${i+1}</td><td>${esc(t.title)}</td><td>${esc(name(t.assignee))}</td><td>${vn(t.due)}</td><td>${ST[t.status]}${isLate(t)?" (quá hạn)":""}</td></tr>`).join("");
+ $("tb").innerHTML="<tr><th>#</th><th>Nội dung</th><th>Người thực hiện</th><th>Hạn</th><th>Trạng thái</th></tr>"+rows.map((t,i)=>`<tr><td>${i+1}</td><td>${esc(t.title)}</td><td>${esc(name(t.assignee))}</td><td>${vn(t.due)}</td><td>${ST[t.status]}${isLate(t)?" (quá hạn)":""}${t.result?`<br><small>${esc(t.result)}</small>`:""}</td></tr>`).join("");
 }
 function exXlsx(){
  if(typeof XLSX==="undefined")return alert("Chưa tải được thư viện Excel. Kiểm tra kết nối mạng.");
- const d=[["STT","Nội dung","Mô tả","Người thực hiện","Hạn hoàn thành","Ưu tiên","Trạng thái"],...rows.map((t,i)=>[i+1,t.title,t.desc,name(t.assignee),vn(t.due),t.priority?"Cao":"Thường",ST[t.status]+(isLate(t)?" (quá hạn)":"")])];
- const ws=XLSX.utils.aoa_to_sheet(d);ws["!cols"]=[{wch:5},{wch:40},{wch:40},{wch:22},{wch:14},{wch:10},{wch:18}];
+ const d=[["STT","Nội dung","Mô tả","Người thực hiện","Hạn hoàn thành","Ưu tiên","Trạng thái","Kết quả"],...rows.map((t,i)=>[i+1,t.title,t.desc,name(t.assignee),vn(t.due),t.priority?"Cao":"Thường",ST[t.status]+(isLate(t)?" (quá hạn)":""),t.result||""])];
+ const ws=XLSX.utils.aoa_to_sheet(d);ws["!cols"]=[{wch:5},{wch:40},{wch:40},{wch:22},{wch:14},{wch:10},{wch:18},{wch:40}];
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Công việc");XLSX.writeFile(wb,"cong-viec-"+today()+".xlsx");
 }
 function exDoc(){
  const v=i=>esc($("w"+i).value.trim()),n=new Date(),dd=v(3)||".........";
- const body=rows.map((t,i)=>`<tr><td align=center>${i+1}</td><td>${esc(t.title)}</td><td>${esc(name(t.assignee))}</td><td align=center>${vn(t.due)}</td><td>${ST[t.status]}${isLate(t)?" (quá hạn)":""}</td></tr>`).join("");
+ const body=rows.map((t,i)=>`<tr><td align=center>${i+1}</td><td>${esc(t.title)}</td><td>${esc(name(t.assignee))}</td><td align=center>${vn(t.due)}</td><td>${ST[t.status]}${isLate(t)?" (quá hạn)":""}${t.result?`<br><small>${esc(t.result)}</small>`:""}</td></tr>`).join("");
  const h=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>
  @page Section1{size:21cm 29.7cm;margin:2cm 2cm 2cm 3cm}div.Section1{page:Section1}body{font-family:"Times New Roman";font-size:14pt}
  p{margin:0;line-height:1.3}table.t{border-collapse:collapse;width:100%}table.t td,table.t th{border:1px solid #000;padding:4px;font-size:13pt}</style></head><body><div class="Section1">
@@ -310,11 +353,42 @@ function exDoc(){
  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+h],{type:"application/msword"}));a.download="bao-cao-cong-viec-"+today()+".doc";a.click();
  ["w1","w2","w3","w4","w5"].forEach((k,i)=>ls(k,$(k).value));
 }
+const ymd=ts=>new Date(ts).toLocaleDateString("sv-SE"),short=id=>{const n=name(id).trim().split(/\s+/);return n[n.length-1]};
+async function exWeek(){
+ if(typeof ExcelJS==="undefined")return alert("Chưa tải được thư viện Excel. Kiểm tra kết nối mạng.");
+ const f=$("wf").value,to=$("wt").value; if(!f||!to||f>to)return alert("Chọn khoảng ngày hợp lệ (từ ngày không sau đến ngày).");
+ const done=tasks.filter(t=>t.status==2).map(t=>({t,d:t.doneAt?ymd(t.doneAt):(t.due||"")})).filter(x=>x.d>=f&&x.d<=to).sort((a,b)=>a.d.localeCompare(b.d));
+ const plan=tasks.filter(t=>t.status<2).sort((a,b)=>(a.due||"9").localeCompare(b.due||"9"));
+ const bad=done.filter(x=>x.t.due&&x.d>x.t.due).length+plan.filter(isLate).length;
+ const unit=$("w2").value.trim(),sh=$("w6").value.trim()||unit||"Đơn vị"; ls("w6",$("w6").value);
+ const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet("Báo cáo tuần"),F={name:"Times New Roman",size:13};
+ ws.columns=[{width:6},{width:46},{width:14},{width:50},{width:15},{width:14},{width:14}];
+ const put=(r,text,font,al)=>{ws.mergeCells(r,1,r,7);const c=ws.getCell(r,1);c.value=text;c.font=font;c.alignment=al};
+ put(1,unit.toUpperCase(),{...F,bold:true},{horizontal:"left"});
+ put(2,"KẾT QUẢ, PHƯƠNG HƯỚNG CÔNG TÁC TUẦN",{...F,bold:true,size:14},{horizontal:"center"});
+ put(3,`(Tuần từ ${vn(f)} đến ${vn(to)})`,{...F,bold:true,italic:true},{horizontal:"center"});
+ ws.getRow(4).values=["STT","Nhiệm vụ đã hoàn thành","Cán bộ thực hiện","Phương hướng","Dự kiến/hạn hoàn thành","Cán bộ thực hiện","Ghi chú"];
+ ws.getRow(4).height=40;
+ const n=Math.max(done.length,plan.length),lines=(x,w)=>String(x||"").split("\n").reduce((a,l)=>a+Math.max(1,Math.ceil(l.length/w)),0);
+ for(let i=0;i<n;i++){const L=done[i],P=plan[i],b=L?L.t.title+(L.t.result?"\nKết quả: "+L.t.result:""):"",d=P?P.title:"";
+  const row=ws.addRow([i+1,b,L?short(L.t.assignee):"",d,P?vn(P.due):"",P?short(P.assignee):"",P?(isLate(P)?"Quá hạn":P.priority?"Ưu tiên cao":""):""]);
+  row.height=Math.max(26,18*Math.max(lines(b,40),lines(d,44)))}
+ const th={style:"thin"},bd={top:th,left:th,bottom:th,right:th};
+ for(let r=4;r<=4+n;r++)for(let c=1;c<=7;c++){const x=ws.getCell(r,c);x.font=r==4?{...F,bold:true}:F;x.border=bd;
+  x.alignment={vertical:"middle",wrapText:true,horizontal:(r==4||[1,3,5,6].includes(c))?"center":"left"}}
+ const fr=n+6; ws.mergeCells(fr,2,fr,7);const fc=ws.getCell(fr,2);
+ fc.value=`${sh}, tự đánh giá: Hoàn thành ${done.length} nhiệm vụ; Nhiệm vụ chưa hoàn thành/chậm/muộn: ${bad?bad+" nhiệm vụ":"Không"}.`;
+ fc.font={...F,bold:true,color:{argb:"FFC00000"}};fc.alignment={wrapText:true,vertical:"middle"};
+ ws.pageSetup={paperSize:9,orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0};
+ const buf=await wb.xlsx.writeBuffer(),a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download="bao-cao-tuan-"+to+".xlsx";a.click();
+}
 function fillUsers(){
  const o=users.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join(""),k=$("fp").value;
  $("fp").innerHTML='<option value="">Cả đội</option>'+o;$("fp").value=k;
  $("avs").innerHTML=AV.map((x,i)=>`<span class="av ${me.avatar===x?"on":""}" onclick="setAv(${i})">${x}</span>`).join("");
 }
+document.addEventListener("click",e=>{const m=$("mn");if(m&&!e.target.closest("#who"))m.classList.add("hide")});
 auth.onAuthStateChanged(async u=>{
  unsub.forEach(f=>f());unsub=[];
  if(!u){$("login").classList.remove("hide");$("app").classList.add("hide");$("who").textContent="";return}
@@ -323,8 +397,8 @@ auth.onAuthStateChanged(async u=>{
  me={uid:u.uid,...d.data()};
  $("login").classList.add("hide");$("app").classList.remove("hide");$("lead").classList.toggle("hide",!isLead());$("gm").classList.toggle("hide",!isLead());
  db.collection("config").doc("gemini").get().then(x=>{gem=x.exists?x.data():{};$("gn").value=gem.model||"";$("gk").placeholder=gem.key?"Đã lưu (nhập key mới để thay)":"API key Gemini"}).catch(()=>{});
- ["w1","w2","w3","w4","w5"].forEach(k=>$(k).value=ls(k)||"");
- const hdr=()=>$("who").innerHTML=`<span class="av">${me.avatar||"👤"}</span><span>${esc(me.name)} · ${R[me.role]}</span>`;hdr();
+ ["w1","w2","w3","w4","w5","w6"].forEach(k=>$(k).value=ls(k)||"");$("wt").value=dayStr(0);$("wf").value=dayStr(-7);
+ const hdr=()=>{$("who").innerHTML=`<span class="av">${me.avatar||"👤"}</span><span>${esc(me.name)} · ${R[me.role]} ▾</span><div id="mn" class="menu hide"><button onclick="tab(2);$('mn').classList.add('hide')">⚙️ Cài đặt</button><button onclick="auth.signOut()">🚪 Đăng xuất</button></div>`;$("who").onclick=e=>{if(!e.target.closest("#mn"))$("mn").classList.toggle("hide")}};hdr();
  unsub.push(db.collection("users").doc(u.uid).onSnapshot(s=>{if(s.exists){me={uid:u.uid,...s.data()};hdr();fillUsers()}}));
  unsub.push(db.collection("users").onSnapshot(s=>{users=s.docs.map(x=>({id:x.id,...x.data()}));fillUsers();render()}));
  unsub.push(db.collection("tasks").onSnapshot(s=>{tasks=s.docs.map(x=>({id:x.id,...x.data()}));render()}));
