@@ -54,6 +54,8 @@ input[type=date]::-webkit-date-and-time-value{text-align:left}.pv{display:flex;g
 .tag{font-size:12px;padding:2px 9px;border-radius:10px;border:1px solid var(--bd);background:var(--inb)}.cao{color:#f87171;font-weight:700}
 .hide{display:none!important}#err,#pm,#um{color:#f87171;font-size:14px}.ok{color:var(--ac)!important}
 nav{position:fixed;bottom:0;left:0;right:0;z-index:6;display:flex;background:var(--card);backdrop-filter:blur(10px);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom)}
+nav button{position:relative}.bdg{position:absolute;top:3px;left:calc(50% + 10px);background:#dc2626;color:#fff;border-radius:10px;font-style:normal;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px}
+.warn{border-color:#f59e0b}.warn h3{color:#f59e0b}.wi{padding:6px 0;border-bottom:1px solid var(--bd);font-size:14px}.wi small{color:var(--mu);font-size:12px}.wi.l b{color:#f87171}.wi.s b{color:#fbbf24}body[data-t=light] .wi.l b{color:#b91c1c}body[data-t=light] .wi.s b{color:#92400e}
 nav button{flex:1;background:none;color:var(--mu);border-radius:0;padding:10px 4px;font-size:12px;font-weight:500}
 nav button span{display:block;font-size:17px}nav button.on{color:var(--ac);text-shadow:0 0 10px var(--ac)}
 @media(min-width:760px){body{padding-bottom:0}nav{position:sticky;top:57px;bottom:auto;border-top:0;border-bottom:1px solid var(--bd)}nav button span{display:inline;margin-right:6px}nav button{font-size:14px}}
@@ -71,12 +73,13 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
  <p id="err"></p>
 </div>
 <div id="app" class="hide">
- <nav><button id="n0" class="on" onclick="tab(0)"><span>🏠</span>Chính</button><button id="n1" onclick="tab(1)"><span>📊</span>Thống kê</button><button id="n2" onclick="tab(2)"><span>⚙️</span>Cài đặt</button></nav>
+ <nav><button id="n0" class="on" onclick="tab(0)"><span>🏠</span>Chính<i id="bdg" class="bdg hide"></i></button><button id="n1" onclick="tab(1)"><span>📊</span>Thống kê</button><button id="n3" onclick="tab(3)"><span>📄</span>Xuất báo cáo</button><button id="n2" onclick="tab(2)"><span>⚙️</span>Cài đặt</button></nav>
 
- <section id="p0">
+<section id="p0">
+  <div id="warn"></div>
   <div class="card"><h3>Công việc của tôi</h3><div class="stat">
    <div><b id="s1">0</b><span>Đang thực hiện</span></div><div><b id="s2">0</b><span>Đã xong</span></div><div><b id="s3">0</b><span>Quá hạn</span></div></div></div>
-  <div class="row" style="margin-bottom:8px"><h3 style="flex:1;margin:0">Nhiệm vụ chi tiết</h3><button onclick="openTask()">＋ Thêm việc</button></div>
+  <div class="row" style="margin-bottom:8px"><h3 id="hd" style="flex:1;margin:0">Nhiệm vụ chi tiết</h3><button onclick="openTask()">＋ Thêm việc</button></div>
   <div id="list"></div>
  </section>
 
@@ -87,14 +90,18 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
    <div class="row"><label>Hạn từ <input id="df" type="date" onchange="renderStats()"></label><label>đến <input id="dt" type="date" onchange="renderStats()"></label></div>
   </div>
   <div class="card"><div id="sum" style="margin-bottom:8px;color:var(--mu)"></div><div class="sc"><table id="tb"></table></div></div>
-  <div class="card"><h3>Xuất báo cáo (theo kết quả tra cứu)</h3>
+ </section>
+
+ <section id="p3" class="hide">
+  <div class="card"><h3>Xuất báo cáo công việc (Excel / Word)</h3>
+   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Danh sách xuất lấy theo bộ lọc ở tab Thống kê: hiện có <b id="xn">0</b> công việc.</p>
    <div class="row"><input id="w1" placeholder="Cơ quan chủ quản"><input id="w2" placeholder="Tên đơn vị (VD: ĐỘI ...)"></div>
    <div class="row"><input id="w3" placeholder="Địa danh"><input id="w4" placeholder="Chức vụ người ký"><input id="w5" placeholder="Họ tên người ký"><input id="w6" placeholder="Tên ngắn (VD: Đội 6)"></div>
    <div class="row"><button onclick="exXlsx()">⬇ Xuất Excel</button><button class="g" onclick="exDoc()">⬇ Xuất Word</button></div>
    <label class="lb" style="margin-top:16px">Báo cáo tuần (cả đội, không theo bộ lọc)</label>
    <div class="row"><label>Từ ngày <input id="wf" type="date"></label><label>đến ngày <input id="wt" type="date"></label></div>
    <button onclick="exWeek()">⬇ Xuất báo cáo tuần (Excel)</button>
-   <p style="font-size:12px;color:var(--mu);margin:8px 0 0">Word theo thể thức Nghị định 30/2020/NĐ-CP: quốc hiệu, tiêu ngữ, tên cơ quan, tiêu đề, bảng, nơi nhận, chữ ký. Số và ngày ban hành điền thêm sau khi mở file.</p></div>
+   <p style="font-size:12px;color:var(--mu);margin:8px 0 0">File Word (.docx) theo thể thức Nghị định 30/2020/NĐ-CP: quốc hiệu, tiêu ngữ, tên cơ quan, tiêu đề, bảng, nơi nhận, chữ ký. Số và ngày ban hành điền thêm sau khi mở file.</p></div>
  </section>
 
  <section id="p2" class="hide">
@@ -151,6 +158,7 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyCGo-yt3pX7Ram35QMZysGEF90FRtOiOt8",
@@ -180,7 +188,7 @@ const isLate=t=>t.status<2&&t.due&&t.due<today();
 
 function theme(t){document.body.dataset.t=t;ls("theme",t)}
 theme(ls("theme")||"teal");
-function tab(i){[0,1,2].forEach(k=>{$("p"+k).classList.toggle("hide",k!==i);$("n"+k).classList.toggle("on",k===i)});if(i===1)renderStats()}
+function tab(i){[0,1,2,3].forEach(k=>{$("p"+k).classList.toggle("hide",k!==i);$("n"+k).classList.toggle("on",k===i)});if(i===1||i===3)renderStats()}
 
 function login(){ $("err").textContent="";
  auth.signInWithEmailAndPassword(email($("lu").value),$("lp").value).catch(()=>$("err").textContent="Sai tên đăng nhập hoặc mật khẩu."); }
@@ -313,6 +321,10 @@ function dueInfo(t){
  return[n<=2?"soon":"",vn(t.due)+" · còn "+n+" ngày"];}
 function render(){
  const mine=tasks.filter(t=>t.assignee===me.uid).sort((a,b)=>(a.status==2)-(b.status==2)||(a.due||"9").localeCompare(b.due||"9"));
+ const dd=t=>Math.round((new Date(t.due+"T00:00")-new Date(today()+"T00:00"))/864e5),act=mine.filter(t=>t.status<2&&t.due),lt=act.filter(t=>dd(t)<0).sort((a,b)=>a.due.localeCompare(b.due)),sn=act.filter(t=>dd(t)>=0&&dd(t)<=2).sort((a,b)=>a.due.localeCompare(b.due)),wi=(c,t)=>`<div class="wi ${c}"><b>${esc(t.title)}</b><br><small>Hạn ${dueInfo(t)[1]}</small></div>`;
+ $("warn").innerHTML=lt.length||sn.length?`<div class="card warn"><h3>⚠ Cần chú ý</h3>${lt.length?`<div class="lb" style="margin-top:0">Quá hạn (${lt.length})</div>${lt.map(t=>wi("l",t)).join("")}`:""}${sn.length?`<div class="lb">Sắp đến hạn - trong 2 ngày (${sn.length})</div>${sn.map(t=>wi("s",t)).join("")}`:""}</div>`:"";
+ $("bdg").textContent=lt.length+sn.length;$("bdg").classList.toggle("hide",!(lt.length+sn.length));
+ $("hd").textContent="Nhiệm vụ chi tiết ("+mine.length+" việc)";
  $("s1").textContent=mine.filter(t=>t.status<2).length;$("s2").textContent=mine.filter(t=>t.status==2).length;$("s3").textContent=mine.filter(isLate).length;
  $("list").innerHTML=mine.map(t=>{const can=isLead()||t.createdBy===me.uid,[dc,dt]=dueInfo(t);
   return `<div class="card task ${isLate(t)?"late":""} ${t.status==2?"done":""}"><div class="t">${esc(t.title)} ${t.priority?'<span class="cao">● Ưu tiên cao</span>':""}</div>
@@ -322,12 +334,13 @@ function render(){
   <div class="f s${t.status}"><label>Tình trạng</label><select onchange="setStatus('${t.id}',this.value)">${ST.map((x,i)=>`<option value="${i}" ${i==t.status?"selected":""}>${x}</option>`).join("")}</select></div>
   ${t.createdBy&&t.createdBy!==t.assignee?`<div class="f"><label>Người giao</label><div class="v">${esc(name(t.createdBy))}</div></div>`:""}${t.status==2?`<div class="f ok" style="grid-column:1/-1"><label>Kết quả</label><div class="v" style="font-weight:500;white-space:pre-wrap">${t.result?esc(t.result):"Chưa ghi kết quả"}</div></div>`:""}</div>
   <div class="row" style="margin-top:10px;justify-content:flex-end">${t.status==2?`<button class="g s" onclick="openResult('${t.id}')">${t.result?"Sửa kết quả":"Ghi kết quả"}</button>`:""}${can?`<button class="g s" onclick="openTask('${t.id}')">Sửa</button><button class="d" onclick="delTask('${t.id}')">Xóa</button>`:""}</div></div>`}).join("")||'<div class="card">Bạn chưa có công việc. Bấm “Thêm việc” để bắt đầu.</div>';
- if(!$("p1").classList.contains("hide"))renderStats();
+ if(!$("p1").classList.contains("hide")||!$("p3").classList.contains("hide"))renderStats();
 }
 function renderStats(){
  const q=$("q").value.trim().toLowerCase(),p=$("fp").value,s=$("fs").value,a=$("df").value,b=$("dt").value;
  rows=tasks.filter(t=>(!q||(t.title+" "+t.desc+" "+(t.result||"")).toLowerCase().includes(q))&&(!p||t.assignee===p)&&(s===""||t.status==s)&&(!a||(t.due&&t.due>=a))&&(!b||(t.due&&t.due<=b)))
   .sort((x,y)=>(x.due||"9").localeCompare(y.due||"9"));
+ $("xn").textContent=rows.length;
  $("sum").textContent=`${rows.length} công việc: ${rows.filter(t=>t.status==2).length} hoàn thành, ${rows.filter(t=>t.status<2).length} chưa xong, ${rows.filter(isLate).length} quá hạn`;
  $("tb").innerHTML="<tr><th>#</th><th>Nội dung</th><th>Người thực hiện</th><th>Hạn</th><th>Trạng thái</th></tr>"+rows.map((t,i)=>`<tr><td>${i+1}</td><td>${esc(t.title)}</td><td>${esc(name(t.assignee))}</td><td>${vn(t.due)}</td><td>${ST[t.status]}${isLate(t)?" (quá hạn)":""}${t.result?`<br><small>${esc(t.result)}</small>`:""}</td></tr>`).join("");
 }
@@ -337,21 +350,51 @@ function exXlsx(){
  const ws=XLSX.utils.aoa_to_sheet(d);ws["!cols"]=[{wch:5},{wch:40},{wch:40},{wch:22},{wch:14},{wch:10},{wch:18},{wch:40}];
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Công việc");XLSX.writeFile(wb,"cong-viec-"+today()+".xlsx");
 }
-function exDoc(){
- const v=i=>esc($("w"+i).value.trim()),n=new Date(),dd=v(3)||".........";
- const body=rows.map((t,i)=>`<tr><td align=center>${i+1}</td><td>${esc(t.title)}</td><td>${esc(name(t.assignee))}</td><td align=center>${vn(t.due)}</td><td>${ST[t.status]}${isLate(t)?" (quá hạn)":""}${t.result?`<br><small>${esc(t.result)}</small>`:""}</td></tr>`).join("");
- const h=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>
- @page Section1{size:21cm 29.7cm;margin:2cm 2cm 2cm 3cm}div.Section1{page:Section1}body{font-family:"Times New Roman";font-size:14pt}
- p{margin:0;line-height:1.3}table.t{border-collapse:collapse;width:100%}table.t td,table.t th{border:1px solid #000;padding:4px;font-size:13pt}</style></head><body><div class="Section1">
- <table width="100%"><tr><td width="40%" align=center style="font-size:13pt"><p>${v(1)}</p><p><b>${v(2)}</b></p><p>_______</p><p style="margin-top:6pt">Số: ....../BC-......</p></td>
- <td width="60%" align=center><p><b>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</b></p><p><b>Độc lập - Tự do - Hạnh phúc</b></p><p>________________</p><p style="margin-top:6pt"><i>${dd}, ngày ${n.getDate()} tháng ${n.getMonth()+1} năm ${n.getFullYear()}</i></p></td></tr></table>
- <p align=center style="margin-top:16pt"><b>BÁO CÁO</b></p><p align=center><b>Kết quả thực hiện công việc</b></p><p align=center>________</p><br>
- <p style="text-indent:1cm;text-align:justify">Căn cứ danh sách nhiệm vụ được giao, ${v(2)||"đơn vị"} báo cáo kết quả thực hiện như sau: tổng số ${rows.length} công việc, trong đó ${rows.filter(t=>t.status==2).length} công việc đã hoàn thành, ${rows.filter(t=>t.status<2).length} công việc đang thực hiện, ${rows.filter(isLate).length} công việc quá hạn.</p><br>
- <table class="t"><tr><th>STT</th><th>Nội dung công việc</th><th>Người thực hiện</th><th>Hạn hoàn thành</th><th>Tình hình thực hiện</th></tr>${body}</table><br>
- <table width="100%"><tr><td width="55%" valign=top style="font-size:12pt"><p><b><i>Nơi nhận:</i></b></p><p>- ......;</p><p>- Lưu: VT.</p></td>
- <td width="45%" align=center><p><b>${v(4)||"NGƯỜI BÁO CÁO"}</b></p><p><i>(Ký, ghi rõ họ tên)</i></p><br><br><br><p><b>${v(5)}</b></p></td></tr></table></div></body></html>`;
- const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+h],{type:"application/msword"}));a.download="bao-cao-cong-viec-"+today()+".doc";a.click();
- ["w1","w2","w3","w4","w5"].forEach((k,i)=>ls(k,$(k).value));
+async function exDoc(){
+ if(typeof JSZip==="undefined")return alert("Chưa tải được thư viện Word. Kiểm tra kết nối mạng.");
+ if(!rows.length)return alert("Chưa có công việc nào theo bộ lọc ở tab Thống kê.");
+ const v=i=>$("w"+i).value.trim(),n=new Date(),X=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+ const FN='<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman"/>';
+ const run=(t,o={})=>String(t==null?"":t).split("\n").map((l,i)=>`<w:r><w:rPr>${FN}${o.b?"<w:b/>":""}${o.i?"<w:i/>":""}<w:sz w:val="${o.sz||26}"/><w:szCs w:val="${o.sz||26}"/></w:rPr>${i?"<w:br/>":""}<w:t xml:space="preserve">${X(l)}</w:t></w:r>`).join("");
+ const P=(r,o={})=>`<w:p><w:pPr>${o.kn?"<w:keepNext/>":""}${o.bdr?'<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="0" w:color="000000"/></w:pBdr>':""}<w:spacing w:before="${o.bf||0}" w:after="${o.af||0}" w:line="${o.ln||240}" w:lineRule="${o.lr||"auto"}"/>${o.ind?`<w:ind ${o.ind}/>`:""}<w:jc w:val="${o.jc||"left"}"/>${o.pz?`<w:rPr><w:sz w:val="${o.pz}"/></w:rPr>`:""}</w:pPr>${r}</w:p>`;
+ const LINE=(ind,af)=>P("",{bdr:1,ln:20,lr:"exact",pz:4,ind,jc:"center",af,bf:30}); // đường kẻ ngang ngắn
+ const TC=(w,ps,va)=>`<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/><w:vAlign w:val="${va||"center"}"/></w:tcPr>${ps}</w:tc>`;
+ const TR=(cells,h)=>`<w:tr><w:trPr><w:cantSplit/>${h?"<w:tblHeader/>":""}</w:trPr>${cells}</w:tr>`;
+ const bd=k=>`<w:${k} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`;
+ const TBL=(cols,rs,o={})=>`<w:tbl><w:tblPr><w:tblW w:w="${cols.reduce((a,b)=>a+b,0)}" w:type="dxa"/>${o.b?`<w:tblBorders>${["top","left","bottom","right","insideH","insideV"].map(bd).join("")}</w:tblBorders>`:""}<w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="${o.my||0}" w:type="dxa"/><w:left w:w="${o.mx||0}" w:type="dxa"/><w:bottom w:w="${o.my||0}" w:type="dxa"/><w:right w:w="${o.mx||0}" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${cols.map(c=>`<w:gridCol w:w="${c}"/>`).join("")}</w:tblGrid>${rs}</w:tbl>`;
+ const C={jc:"center",ln:276},L={ln:276}; // dòng 1,15 trong ô: không bị cắt chữ
+ // --- Thể thức đầu văn bản (NĐ 30/2020: quốc hiệu, tiêu ngữ, tên cơ quan, số, địa danh ngày tháng)
+ const left=(v(1)?P(run(v(1).toUpperCase(),{sz:24}),{jc:"center"}):"")+(v(2)?P(run(v(2).toUpperCase(),{b:1,sz:24}),{jc:"center"})+LINE('w:left="1100" w:right="1100"',60):"")+P(run("Số: ....../BC-......",{sz:26}),{jc:"center",bf:60});
+ const right=P(run("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",{b:1,sz:24}),{jc:"center"})+P(run("Độc lập - Tự do - Hạnh phúc",{b:1,sz:26}),{jc:"center"})+LINE('w:left="900" w:right="900"',60)+P(run((v(3)||"......")+", ngày "+n.getDate()+" tháng "+(n.getMonth()+1)+" năm "+n.getFullYear(),{i:1,sz:26}),{jc:"center",bf:120});
+ const head=TBL([3700,5371],TR(TC(3700,left,"top")+TC(5371,right,"top")));
+ const title=P(run("BÁO CÁO",{b:1,sz:28}),{jc:"center",bf:360,kn:1})+P(run("Kết quả thực hiện công việc",{b:1,sz:28}),{jc:"center",kn:1})+LINE('w:left="3300" w:right="3300"',200);
+ const intro=P(run(`Căn cứ danh sách nhiệm vụ được giao, ${v(2)||"đơn vị"} báo cáo kết quả thực hiện như sau: tổng số ${rows.length} công việc, trong đó ${rows.filter(t=>t.status==2).length} công việc đã hoàn thành, ${rows.filter(t=>t.status<2).length} công việc đang thực hiện, ${rows.filter(isLate).length} công việc quá hạn.`,{sz:28}),{jc:"both",ln:312,bf:120,af:160,ind:'w:firstLine="720"'});
+ // --- Bảng: cố định độ rộng cột, ô tự giãn chiều cao, căn giữa theo chiều dọc
+ const W=[760,3300,1500,1300,2211],hd=["STT","Nội dung công việc","Người thực hiện","Hạn hoàn thành","Tình hình thực hiện"];
+ const hr=TR(hd.map((x,i)=>TC(W[i],P(run(x,{b:1,sz:24}),C))).join(""),1);
+ const br=rows.map((t,i)=>TR(
+  TC(W[0],P(run(i+1,{sz:24}),C))+TC(W[1],P(run(t.title,{sz:24}),L))+TC(W[2],P(run(name(t.assignee),{sz:24}),C))+TC(W[3],P(run(vn(t.due),{sz:24}),C))+
+  TC(W[4],P(run(ST[t.status]+(isLate(t)?" (quá hạn)":""),{sz:24}),C)+(t.result?P(run("Kết quả: "+t.result,{sz:22}),{ln:276,bf:40}):""))
+ )).join("");
+ const tbl=TBL(W,hr+br,{b:1,mx:100,my:60});
+ const sign=TBL([5000,4071],TR(
+  TC(5000,P(run("Nơi nhận:",{b:1,i:1,sz:24}),{kn:1})+P(run("- ......;",{sz:22}),{kn:1})+P(run("- Lưu: VT.",{sz:22})),"top")+
+  TC(4071,P(run((v(4)||"NGƯỜI BÁO CÁO").toUpperCase(),{b:1,sz:28}),{jc:"center",kn:1})+P(run("(Ký, ghi rõ họ tên)",{i:1,sz:26}),{jc:"center",kn:1})+P(run(v(5),{b:1,sz:28}),{jc:"center",bf:1100}),"top")
+ ));
+ const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"',H='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+ const doc=`${H}<w:document ${NS} xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>${head}${title}${intro}${tbl}${P("",{bf:200})}${sign}${P("")}<w:sectPr><w:headerReference w:type="default" r:id="rId2"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1701" w:header="567" w:footer="567" w:gutter="0"/><w:titlePg/></w:sectPr></w:body></w:document>`;
+ const fl=t=>`<w:r><w:rPr>${FN}<w:sz w:val="26"/></w:rPr>${t}</w:r>`; // số trang ở giữa lề trên, từ trang 2
+ const hdr=`${H}<w:hdr ${NS}><w:p><w:pPr><w:jc w:val="center"/></w:pPr>${fl('<w:fldChar w:fldCharType="begin"/>')}${fl('<w:instrText xml:space="preserve"> PAGE </w:instrText>')}${fl('<w:fldChar w:fldCharType="separate"/>')}${fl("<w:t>2</w:t>")}${fl('<w:fldChar w:fldCharType="end"/>')}</w:p></w:hdr>`;
+ const sty=`${H}<w:styles ${NS}><w:docDefaults><w:rPrDefault><w:rPr>${FN}<w:sz w:val="26"/><w:szCs w:val="26"/><w:lang w:val="vi-VN" w:eastAsia="vi-VN" w:bidi="ar-SA"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>`;
+ const R="http://schemas.openxmlformats.org/officeDocument/2006/relationships",PK="http://schemas.openxmlformats.org/package/2006/relationships";
+ const z=new JSZip();
+ z.file("[Content_Types].xml",`${H}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/></Types>`);
+ z.file("_rels/.rels",`${H}<Relationships xmlns="${PK}"><Relationship Id="rId1" Type="${R}/officeDocument" Target="word/document.xml"/></Relationships>`);
+ z.file("word/_rels/document.xml.rels",`${H}<Relationships xmlns="${PK}"><Relationship Id="rId1" Type="${R}/styles" Target="styles.xml"/><Relationship Id="rId2" Type="${R}/header" Target="header1.xml"/></Relationships>`);
+ z.file("word/document.xml",doc);z.file("word/styles.xml",sty);z.file("word/header1.xml",hdr);
+ const blob=await z.generateAsync({type:"blob",mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="bao-cao-cong-viec-"+today()+".docx";a.click();
+ [1,2,3,4,5].forEach(i=>ls("w"+i,$("w"+i).value));
 }
 const ymd=ts=>new Date(ts).toLocaleDateString("sv-SE"),short=id=>{const n=name(id).trim().split(/\s+/);return n[n.length-1]};
 async function exWeek(){
@@ -368,14 +411,14 @@ async function exWeek(){
  put(2,"KẾT QUẢ, PHƯƠNG HƯỚNG CÔNG TÁC TUẦN",{...F,bold:true,size:14},{horizontal:"center"});
  put(3,`(Tuần từ ${vn(f)} đến ${vn(to)})`,{...F,bold:true,italic:true},{horizontal:"center"});
  ws.getRow(4).values=["STT","Nhiệm vụ đã hoàn thành","Cán bộ thực hiện","Phương hướng","Dự kiến/hạn hoàn thành","Cán bộ thực hiện","Ghi chú"];
- ws.getRow(4).height=40;
+ ws.getRow(4).height=52;
  const n=Math.max(done.length,plan.length),lines=(x,w)=>String(x||"").split("\n").reduce((a,l)=>a+Math.max(1,Math.ceil(l.length/w)),0);
  for(let i=0;i<n;i++){const L=done[i],P=plan[i],b=L?L.t.title+(L.t.result?"\nKết quả: "+L.t.result:""):"",d=P?P.title:"";
   const row=ws.addRow([i+1,b,L?short(L.t.assignee):"",d,P?vn(P.due):"",P?short(P.assignee):"",P?(isLate(P)?"Quá hạn":P.priority?"Ưu tiên cao":""):""]);
-  row.height=Math.max(26,18*Math.max(lines(b,40),lines(d,44)))}
+  row.height=Math.max(34,19*Math.max(lines(b,34),lines(d,38))+10)}
  const th={style:"thin"},bd={top:th,left:th,bottom:th,right:th};
  for(let r=4;r<=4+n;r++)for(let c=1;c<=7;c++){const x=ws.getCell(r,c);x.font=r==4?{...F,bold:true}:F;x.border=bd;
-  x.alignment={vertical:"middle",wrapText:true,horizontal:(r==4||[1,3,5,6].includes(c))?"center":"left"}}
+  x.alignment={vertical:"middle",wrapText:true,horizontal:(r==4||[1,3,5,6,7].includes(c))?"center":"left",indent:(r==4||[1,3,5,6,7].includes(c))?0:1}}
  const fr=n+6; ws.mergeCells(fr,2,fr,7);const fc=ws.getCell(fr,2);
  fc.value=`${sh}, tự đánh giá: Hoàn thành ${done.length} nhiệm vụ; Nhiệm vụ chưa hoàn thành/chậm/muộn: ${bad?bad+" nhiệm vụ":"Không"}.`;
  fc.font={...F,bold:true,color:{argb:"FFC00000"}};fc.alignment={wrapText:true,vertical:"middle"};
