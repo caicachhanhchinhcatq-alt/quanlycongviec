@@ -1,0 +1,16 @@
+# Progress
+- Đã tạo index.html bản đầu.
+- Đổi phương án: cán bộ cũng nhập việc
+- Cán bộ chỉ nhập việc cho chính mình; giao người khác là quyền đội trưởng/đội phó
+- Lỗi trang trắng: firebaseConfig trống + mở file://. Đã thêm thông báo lỗi rõ ràng.
+- Đã dán firebaseConfig (project quanlycongviec-4c317). Chờ chạy thử qua localhost/hosting.
+- Phase 5: viết lại giao diện 3 tab theo ảnh Phong_cach.jpg (xanh lục), Excel (SheetJS), Word (.doc HTML, NĐ 30). Cần rules update/avatar mới.
+- Phase 5b: dialog nhập việc dễ hơn (chip ngày, lịch, giọng nói vi-VN, ảnh công văn -> Gemini, key lưu Firestore config/gemini). Rules vá lỗ hổng: member()=có hồ sơ users; tạo hồ sơ chỉ lead; bỏ nút đội trưởng đầu tiên.
+- Phase 5b: nhiều ảnh công văn (tối đa 10), prompt hướng dẫn cách ghi nhiệm vụ (động từ hành chính, ngắn gọn), thẻ việc có nhãn riêng: Hạn / Người thực hiện / Tình trạng / Người giao, hạn tô màu theo mức khẩn.
+- Phase 5b: sửa form trên iPhone: ô tên/nội dung rộng hơn (textarea 17px), nút 🎤 Nói nhỏ ở dòng nhãn + gợi ý 1 dòng, nút ảnh công văn 1 dòng, ô ngày không tràn, icon nhỏ lại.
+- Phase 5c: menu tên tài khoản (Cài đặt, Đăng xuất); đổi sang Hoàn thành mở hộp Kết quả (result, doneAt), AI đọc ảnh điền kết quả; Excel báo cáo tuần bằng ExcelJS (trái: đã hoàn thành trong tuần, phải: phương hướng = việc chưa xong); rules cho phép assignee ghi result, doneAt. Đã bỏ ô Tình trạng khỏi form Sửa.
+- Lỗi: Khánh (cán bộ) bấm Lưu kết quả báo 'Missing or insufficient permissions'. Nghi chưa Publish rules mới (assignee cần hasOnly status,result,doneAt). Chờ người dùng kiểm tra rules trên Firebase.
+- Phase 5d: bỏ khối 'Xuất báo cáo công việc' ở tab 3; báo cáo tuần có ô chọn Tuần hiện tại / Tuần sắp tới / Tùy chọn, mốc thứ Năm → thứ Tư (chưa đến thứ Tư vẫn xuất, lấy số liệu hiện có); tab Thống kê thêm nút Xuất Excel/Word theo bộ lọc, phân trang (mặc định 10; chọn 10/30/50/100, nút Trước/Sau). Đã kiểm tra cú pháp JS + logic mốc tuần; chưa chạy thử trên trình duyệt.
+- Phase 5e: bỏ xuất Word (hàm exDoc, nút Word, thư viện JSZip) và các ô Cơ quan chủ quản/Địa danh/Chức vụ/Họ tên người ký; chỉ giữ Tên đơn vị + Tên ngắn cho báo cáo tuần Excel. Cột 'Nhiệm vụ đã hoàn thành' trong báo cáo tuần chỉ còn tên nhiệm vụ (bỏ dòng 'Kết quả: ...'). Đã kiểm tra cú pháp JS, chưa chạy thử trình duyệt.
+- Phase 5f: tab Cài đặt thêm thẻ 'Cài ứng dụng lên điện thoại' (mọi vai trò): có beforeinstallprompt thì hiện hộp cài, không thì hướng dẫn theo iOS/Android/máy tính; thêm manifest.json, sw.js (tối thiểu), icon-192/512.png (phải đặt cùng thư mục index.html trên GitHub). Màn hình đăng nhập làm lại: logo khiên, tiêu đề căn giữa, ô nhập căn giữa, nút full-width, Enter để đăng nhập, ẩn header khi chưa đăng nhập. Đã chụp thử giao diện đăng nhập (390px, 1280px) và kiểm tra cú pháp JS; chưa thử cài thật trên điện thoại.
+- Ghi chú: admin@doi.local cần tài liệu users/{UID} (name, username, role=doitruong) trong Firestore mới vào được app.

@@ -2,6 +2,8 @@
 <html lang="vi"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Quản lý công việc đội công tác</title>
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#021a18">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Quản lý việc"><link rel="apple-touch-icon" href="icon-192.png">
 <style>
 *{box-sizing:border-box}
 body[data-t=teal]{--bg:#021a18;--bg2:#06504a;--card:rgba(5,45,41,.78);--bd:rgba(46,230,200,.3);--ac:#2ee6c8;--acx:#021a18;--tx:#e6fffa;--mu:#a7e0d5;--inb:rgba(0,18,16,.65)}
@@ -63,15 +65,29 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px;borde
 .sc{overflow-x:auto}
 dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:var(--tx);width:min(680px,96vw);padding:16px}dialog::backdrop{background:#000a}dialog{max-height:92vh;overflow:auto}.chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0}.sgi{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--bd)}.sgi small{color:var(--mu)}
 .avs{display:flex;gap:8px;flex-wrap:wrap}.avs .av{cursor:pointer;width:42px;height:42px}.avs .av.on{background:var(--ac)}
+#login{min-height:calc(100vh - 40px);display:flex;align-items:center;justify-content:center;padding:16px 0}
+.lg{width:100%;max-width:380px;text-align:center;padding:32px 24px 24px;margin:0}
+.lg svg{width:84px;height:84px;filter:drop-shadow(0 0 14px var(--ac))}
+.lg h1{margin:14px 0 2px;font-size:22px;letter-spacing:.5px;color:var(--ac)}
+.lg .sub{margin:0;font-size:13px;letter-spacing:3px;color:var(--mu)}
+.lg .hello{margin:22px 0 10px;font-size:15px;color:var(--tx)}
+.lg input{text-align:center;padding:13px 12px;font-size:16px;margin:5px 0}
+.lg button{width:100%;padding:13px;margin:14px 0 4px;font-size:16px}
+.lg #err{min-height:20px;margin:6px 0 0}
+.lg small{display:block;margin-top:14px;color:var(--mu);font-size:12px}
+body:has(#login:not(.hide)) header{display:none}
 </style></head><body data-t="teal">
 <header><b>QUẢN LÝ CÔNG VIỆC ĐỘI CÔNG TÁC</b><span id="who"></span></header>
 <main>
-<div id="login" class="card hide" style="max-width:420px;margin:40px auto">
- <h3>Đăng nhập</h3>
- <input id="lu" placeholder="Tên đăng nhập (không dấu, không cách)"><input id="lp" type="password" placeholder="Mật khẩu (từ 6 ký tự)">
- <div class="row"><button onclick="login()">Đăng nhập</button></div>
+<div id="login" class="hide"><div class="card lg">
+ <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" style="color:var(--ac)"><path d="M50 8 L84 21 V48 C84 69 70 84 50 92 C30 84 16 69 16 48 V21 Z" stroke-width="4" stroke-linejoin="round"/><path d="M34 50 L46 62 L68 38" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+ <h1>QUẢN LÝ CÔNG VIỆC</h1><p class="sub">ĐỘI CÔNG TÁC</p>
+ <p class="hello">Đăng nhập để tiếp tục</p>
+ <input id="lu" placeholder="Tên đăng nhập" autocomplete="username" autocapitalize="none" autocorrect="off"><input id="lp" type="password" placeholder="Mật khẩu" autocomplete="current-password">
+ <button onclick="login()">Đăng nhập</button>
  <p id="err"></p>
-</div>
+ <small>Tài khoản do đội trưởng hoặc đội phó cấp.</small>
+</div></div>
 <div id="app" class="hide">
  <nav><button id="n0" class="on" onclick="tab(0)"><span>🏠</span>Chính<i id="bdg" class="bdg hide"></i></button><button id="n1" onclick="tab(1)"><span>📊</span>Thống kê</button><button id="n3" onclick="tab(3)"><span>📄</span>Xuất báo cáo</button><button id="n2" onclick="tab(2)"><span>⚙️</span>Cài đặt</button></nav>
 
@@ -110,6 +126,10 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
 
  <section id="p2" class="hide">
   <div class="card"><h3>Giao diện</h3><div class="row"><button class="g" onclick="theme('teal')">Xanh lục</button><button class="g" onclick="theme('blue')">Xanh dương</button><button class="g" onclick="theme('light')">Sáng</button></div></div>
+  <div class="card"><h3>Cài ứng dụng lên điện thoại</h3>
+   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Thêm biểu tượng ra màn hình chính để mở nhanh như một ứng dụng.</p>
+   <button onclick="installApp()">📲 Thêm vào màn hình chính</button>
+   <p id="im" style="font-size:14px;margin:10px 0 0"></p></div>
   <div class="card"><h3>Ảnh đại diện</h3><div class="avs" id="avs"></div></div>
   <div class="card"><h3>Đổi mật khẩu</h3>
    <input id="po" type="password" placeholder="Mật khẩu hiện tại"><input id="pn" type="password" placeholder="Mật khẩu mới (từ 6 ký tự)">
@@ -189,12 +209,20 @@ const name=id=>(users.find(x=>x.id===id)||{}).name||"?";
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
 const isLate=t=>t.status<2&&t.due&&t.due<today();
 
+let dip=null;addEventListener("beforeinstallprompt",e=>{e.preventDefault();dip=e});
+if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+async function installApp(){const m=$("im");
+ if(matchMedia("(display-mode: standalone)").matches||navigator.standalone){m.textContent="Ứng dụng đã được cài trên thiết bị này.";return}
+ if(dip){dip.prompt();await dip.userChoice;dip=null;return}
+ const u=navigator.userAgent;
+ m.innerHTML=/iPhone|iPad|iPod/.test(u)?"Trên iPhone/iPad: bấm nút <b>Chia sẻ</b> (hình vuông có mũi tên lên) ở thanh trình duyệt, kéo xuống chọn <b>Thêm vào MH chính</b>, rồi bấm <b>Thêm</b>.":/Android/.test(u)?"Trên Android: bấm menu <b>⋮</b> của Chrome, chọn <b>Thêm vào màn hình chính</b> (hoặc <b>Cài đặt ứng dụng</b>).":"Trên máy tính: bấm biểu tượng cài đặt ở cuối thanh địa chỉ của Chrome/Edge, hoặc mở trang này trên điện thoại để thêm vào màn hình chính."}
 function theme(t){document.body.dataset.t=t;ls("theme",t)}
 theme(ls("theme")||"teal");
 function tab(i){[0,1,2,3].forEach(k=>{$("p"+k).classList.toggle("hide",k!==i);$("n"+k).classList.toggle("on",k===i)});if(i===1)renderStats();if(i===3)wkSel()}
 
 function login(){ $("err").textContent="";
  auth.signInWithEmailAndPassword(email($("lu").value),$("lp").value).catch(()=>$("err").textContent="Sai tên đăng nhập hoặc mật khẩu."); }
+["lu","lp"].forEach(i=>$(i).addEventListener("keydown",e=>{if(e.key==="Enter")login()}));
 async function addUser(){
  const u=$("nu").value.trim(),n=$("nn").value.trim(),p=$("np").value; if(!u||!n||p.length<6){$("um").textContent="Cần tên đăng nhập, họ tên, mật khẩu ≥ 6 ký tự.";return}
  const sec=firebase.initializeApp(firebaseConfig,"sec"+Date.now());
