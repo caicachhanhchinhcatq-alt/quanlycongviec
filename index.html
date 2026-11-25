@@ -122,6 +122,11 @@ body:has(#login:not(.hide)) header{display:none}
    <div id="wc" class="row hide"><label>Từ ngày <input id="wf" type="date"></label><label>đến ngày <input id="wt" type="date"></label></div>
    <button onclick="exWeek()">⬇ Xuất báo cáo tuần (Excel)</button>
    <p style="font-size:12px;color:var(--mu);margin:8px 0 0">Số liệu có đến đâu xuất đến đó (chưa đến thứ Tư vẫn xuất được).</p></div>
+  <div class="card"><h3>Mẫu A2 - Chấm điểm KPI</h3>
+   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Kỳ đánh giá: từ ngày 15 tháng trước đến ngày 14 của tháng được chọn. Tính theo hạn hoàn thành của nhiệm vụ trong kỳ; việc chưa chọn cấp giao nhiệm vụ không được tính. Tên đơn vị lấy ở ô phía trên.</p>
+   <label class="lb" style="margin-top:0">Tháng đánh giá</label><input id="km" type="month" onchange="kpiSum()">
+   <div id="ks" style="font-size:14px;margin:8px 0"></div>
+   <button onclick="exA2()">⬇ Xuất Mẫu A2 (Excel)</button></div>
  </section>
 
  <section id="p2" class="hide">
@@ -134,6 +139,12 @@ body:has(#login:not(.hide)) header{display:none}
   <div class="card"><h3>Đổi mật khẩu</h3>
    <input id="po" type="password" placeholder="Mật khẩu hiện tại"><input id="pn" type="password" placeholder="Mật khẩu mới (từ 6 ký tự)">
    <button onclick="chPass()">Đổi mật khẩu</button> <span id="pm"></span></div>
+  <div class="card"><h3>Mặc định chấm điểm KPI (Mẫu A2)</h3>
+   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Giá trị tự điền khi thêm việc mới; vẫn sửa được từng việc.</p>
+   <label class="lb" style="margin-top:0">Lãnh đạo chỉ đạo / ký thường gặp</label><select id="sd" onchange="ldChg('sd','sdx')"></select><input id="sdx" class="hide" placeholder="Nhập cấp bậc, họ tên - chức vụ">
+   <label class="lb">Cấp giao nhiệm vụ mặc định</label><select id="sl"></select>
+   <label class="lb">Cấp hay dùng (hiện đầu danh sách chọn)</label><div id="sf" class="chips"></div><select id="sa" onchange="favAdd(this.value);this.value=''"></select>
+   <button onclick="saveKd()" style="margin-top:8px">Lưu mặc định</button> <span id="kmsg"></span></div>
   <div id="gm" class="card hide"><h3>AI Gemini (gợi ý việc từ ảnh công văn)</h3>
    <input id="gk" type="password" placeholder="API key Gemini"><input id="gn" placeholder="Tên model (để trống = gemini-3.5-flash)">
    <button onclick="saveGem()">Lưu</button> <span id="gmsg"></span>
@@ -157,9 +168,14 @@ body:has(#login:not(.hide)) header{display:none}
  <div class="hint">Bấm “Nói” rồi đọc; nói kèm “ngày mai”, “20/11” sẽ tự điền hạn.</div>
  <div class="lh"><label class="lb">Nội dung / căn cứ</label><button class="g mic" onclick="dictate('d',this)">🎤 Nói</button></div>
  <textarea id="d" class="big" rows="4" placeholder="VD: Theo Công văn số ... ngày ..."></textarea>
+ <div class="lh"><label class="lb">Sản phẩm</label><button class="g mic" onclick="dictate('pd',this)">🎤 Nói</button></div>
+ <input id="pd" placeholder="VD: Báo cáo của Đội gửi Phòng PV01">
  <label class="lb">Hạn hoàn thành: <b id="dl" style="color:var(--tx);font-size:14px;text-transform:none"></b></label>
  <input id="due" type="date" onchange="dueLbl()" onclick="try{this.showPicker()}catch(e){}">
  <div class="chips"><button class="g s" onclick="setDue(0)">Hôm nay</button><button class="g s" onclick="setDue(1)">Ngày mai</button><button class="g s" onclick="setDue(3)">3 ngày</button><button class="g s" onclick="setDue(7)">1 tuần</button><button class="g s" onclick="setDue('m')">Cuối tháng</button></div>
+ <label class="lb">Lãnh đạo trực tiếp chỉ đạo nhiệm vụ</label><select id="ld" onchange="ldChg('ld','ldx')"></select><input id="ldx" class="hide" placeholder="Nhập cấp bậc, họ tên - chức vụ">
+ <label class="lb">Cấp trình / giao nhiệm vụ / cấp ký</label><select id="lv" onchange="lvPts()"></select>
+ <div class="hint">Điểm nhiệm vụ được giao: <b id="lvp" style="color:var(--ac)">—</b></div>
  <div id="ra"><label class="lb">Người thực hiện</label><select id="a"></select></div>
  <label style="display:flex;gap:8px;align-items:center;margin:12px 0"><input id="pr" type="checkbox" style="width:auto;margin:0"> Ưu tiên cao</label>
  <div class="row" style="margin-top:10px"><button onclick="saveTask()">Lưu</button><button class="g" onclick="dlg.close()">Hủy</button></div>
@@ -175,6 +191,9 @@ body:has(#login:not(.hide)) header{display:none}
  <div id="rsg" class="hint" style="font-size:13px"></div>
  <label class="lb">Kết quả</label>
  <textarea id="rr" class="big" rows="4" placeholder="VD: Đã gửi Báo cáo số .../BC-... ngày ... về Sở Tư pháp"></textarea>
+ <div class="row"><div><label class="lb">Số lần phải hoàn thiện, chỉnh sửa</label><input id="re" type="number" min="0" step="1" value="0" inputmode="numeric" oninput="rPrev()"></div>
+ <div><label class="lb">Ngày hoàn thành thực tế</label><input id="rd" type="date" onchange="rPrev()"></div></div>
+ <div id="rk" class="hint" style="font-size:13px;margin-top:6px"></div>
  <div class="row" style="margin-top:10px"><button onclick="saveRes()">Lưu</button><button class="g" onclick="rdlg.close()">Hủy</button></div>
 </dialog>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -208,6 +227,28 @@ const vn=d=>d?d.split("-").reverse().join("/"):"";
 const name=id=>(users.find(x=>x.id===id)||{}).name||"?";
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
 const isLate=t=>t.status<2&&t.due&&t.due<today();
+/* ===== KPI / Mẫu A2 ===== */
+const LV=[["1.1","Trình Ban Chấp hành Trung ương - Ban hành",60],["1.2","Trình Ban Chấp hành Trung ương - Cho ý kiến chỉ đạo",55],["1.3","Trình Bộ Chính trị, Ban Bí thư - Ban hành",50],["1.4","Trình Bộ Chính trị, Ban Bí thư - Cho ý kiến chỉ đạo",45],["1.5","Trình Quốc hội - Ban hành",60],["1.6","Trình Quốc hội - Cho ý kiến chỉ đạo",45],["1.7","Trình Chính phủ - Ban hành",45],["1.8","Trình Chính phủ - Cho ý kiến chỉ đạo",40],["1.9","Trình Đảng ủy CATW, Bộ Công an, cấp ủy, chính quyền cấp tỉnh - Ban hành",35],["1.10","Trình Đảng ủy CATW, Bộ Công an, cấp ủy, chính quyền cấp tỉnh - Cho ý kiến chỉ đạo",30],["1.11","Trình cấp Cục, Công an cấp tỉnh - Ban hành",25],["1.12","Trình cấp Cục, Công an cấp tỉnh - Cho ý kiến chỉ đạo",20],["1.13","Trình cấp phòng - Ban hành",15],["1.14","Trình cấp phòng - Cho ý kiến chỉ đạo",10],["1.15","Trình cấp ủy, chính quyền cấp xã - Ban hành",15],["1.16","Trình cấp ủy, chính quyền cấp xã - Cho ý kiến chỉ đạo",10],["1.17","Nhiệm vụ khác",10],
+["2.1","Nhiệm vụ Trung ương, Quốc hội, Chính phủ giao",50],["2.2","Nhiệm vụ Đảng ủy CATW, lãnh đạo Bộ giao",40],["2.3","Nhiệm vụ cấp ủy, chính quyền cấp tỉnh giao",30],["2.4","Nhiệm vụ cấp Cục, Công an địa phương giao",25],["2.5","Nhiệm vụ cấp phòng; cấp ủy, chính quyền cấp xã giao",15],["2.6","Nhiệm vụ Công an cấp xã, cấp đội giao",10],["2.7","Nhiệm vụ khác",5],
+["3.1","Văn bản, báo cáo do lãnh đạo Bộ Công an ký",45],["3.2","Văn bản, báo cáo do lãnh đạo cấp ủy, chính quyền cấp tỉnh ký",35],["3.3","Văn bản, báo cáo do lãnh đạo cấp Cục, Công an cấp tỉnh ký",30],["3.4","Văn bản, báo cáo do lãnh đạo cấp phòng ký",20],["3.5","Văn bản, báo cáo do lãnh đạo Công an cấp xã, cấp đội ký",15]];
+const LVM=Object.fromEntries(LV.map(x=>[x[0],x])), lvLabel=c=>LVM[c]?c+". "+LVM[c][1]:"", f2=x=>Math.round(x*100)/100;
+const LEADERS=["Thiếu tướng Nguyễn Đức Thuận - Giám đốc Công an tỉnh","Đại tá Lục Thế Hưng - Phó Giám đốc Công an tỉnh","Đại tá Hoàng Văn Mạnh - Phó Giám đốc Công an tỉnh","Đại tá Dương Thanh Bình - Phó Giám đốc Công an tỉnh","Đại tá Đỗ Tiến Dũng - Phó Giám đốc Công an tỉnh","Đại tá Nguyễn Thành Chung - Phó Giám đốc Công an tỉnh","Đại tá Chu Quang Trung - Phó Giám đốc Công an tỉnh","Đại tá Ma Quang Trung - Phó Giám đốc Công an tỉnh"];
+const KDEF={leader:LEADERS[1],level:"2.4",fav:["2.3","2.4","2.5"]}, kd=()=>({...KDEF,...((me&&me.kpi)||{})});
+function lvOptions(){const fav=(kd().fav||[]).filter(c=>LVM[c]),opt=c=>`<option value="${c}">${esc(lvLabel(c))} (${LVM[c][2]}đ)</option>`,
+ grp=(n,p)=>`<optgroup label="${n}">${LV.filter(x=>x[0].startsWith(p)).map(x=>opt(x[0])).join("")}</optgroup>`;
+ return '<option value="">— Chưa chọn —</option>'+(fav.length?`<optgroup label="Hay dùng">${fav.map(opt).join("")}</optgroup>`:"")+grp("Nhóm 1 - Có sản phẩm trình lên các cấp","1.")+grp("Nhóm 2 - Triển khai theo chỉ đạo","2.")+grp("Nhóm 3 - Chủ động báo cáo lên cấp trên","3.")}
+const ldSet=(s,i,v)=>{const sel=$(s),inp=$(i);sel.innerHTML=LEADERS.map(x=>`<option>${esc(x)}</option>`).join("")+'<option value="__x">Khác (nhập tay)…</option>';
+ if(!v||LEADERS.includes(v)){sel.value=v||LEADERS[0];inp.value=""}else{sel.value="__x";inp.value=v}inp.classList.toggle("hide",sel.value!=="__x")};
+const ldChg=(s,i)=>$(i).classList.toggle("hide",$(s).value!=="__x"), ldGet=(s,i)=>$(s).value==="__x"?$(i).value.trim():$(s).value;
+const lvPts=()=>{$("lvp").textContent=LVM[$("lv").value]?LVM[$("lv").value][2]+" điểm":"—"};
+function kpiFill(t){const k=kd();$("pd").value=t.prod||"";ldSet("ld","ldx",t.leader||k.leader);$("lv").innerHTML=lvOptions();$("lv").value=t.level||k.level;lvPts()}
+/* A: số lượng; B: chất lượng (số lần chỉnh sửa); C: tiến độ (số ngày chậm) - Điều 5 Hướng dẫn */
+function kpiOf(t){const L=LVM[t.level];if(!L)return null;const g=L[2],done=t.status==2;let q=0,c=0,late=0;
+ if(done){const n=+t.edits||0,dd=t.doneDate||(t.doneAt?ymd(t.doneAt):"");q=n>=5?0:n==4?.25:n>=2?.5:n==1?.75:1;
+  late=t.due&&dd?Math.round((new Date(dd+"T00:00")-new Date(t.due+"T00:00"))/864e5):0;c=late>20?0:late>=11?.25:late>=6?.5:late>=1?.75:1}
+ return{g,a:done?g:0,b:g*q,c:g*c,late}}
+const kpiCell=t=>{const k=kpiOf(t);return k?`<div class="f"><label>${t.status==2?"Điểm A / B / C":"Điểm KPI"} · ${t.level}</label><div class="v">${t.status==2?`${f2(k.a)} / ${f2(k.b)} / ${f2(k.c)}`:"giao "+k.g}</div></div>`:""};
+
 
 let dip=null;addEventListener("beforeinstallprompt",e=>{e.preventDefault();dip=e});
 if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
@@ -218,7 +259,7 @@ async function installApp(){const m=$("im");
  m.innerHTML=/iPhone|iPad|iPod/.test(u)?"Trên iPhone/iPad: bấm nút <b>Chia sẻ</b> (hình vuông có mũi tên lên) ở thanh trình duyệt, kéo xuống chọn <b>Thêm vào MH chính</b>, rồi bấm <b>Thêm</b>.":/Android/.test(u)?"Trên Android: bấm menu <b>⋮</b> của Chrome, chọn <b>Thêm vào màn hình chính</b> (hoặc <b>Cài đặt ứng dụng</b>).":"Trên máy tính: bấm biểu tượng cài đặt ở cuối thanh địa chỉ của Chrome/Edge, hoặc mở trang này trên điện thoại để thêm vào màn hình chính."}
 function theme(t){document.body.dataset.t=t;ls("theme",t)}
 theme(ls("theme")||"teal");
-function tab(i){[0,1,2,3].forEach(k=>{$("p"+k).classList.toggle("hide",k!==i);$("n"+k).classList.toggle("on",k===i)});if(i===1)renderStats();if(i===3)wkSel()}
+function tab(i){[0,1,2,3].forEach(k=>{$("p"+k).classList.toggle("hide",k!==i);$("n"+k).classList.toggle("on",k===i)});if(i===1)renderStats();if(i===3){wkSel();kpiInit()}}
 
 function login(){ $("err").textContent="";
  auth.signInWithEmailAndPassword(email($("lu").value),$("lp").value).catch(()=>$("err").textContent="Sai tên đăng nhập hoặc mật khẩu."); }
@@ -249,10 +290,10 @@ function openTask(id){
  const o=isLead()?users:users.filter(u=>u.id===me.uid);
  $("a").innerHTML=o.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join("");$("a").value=t.assignee;
  $("ra").classList.toggle("hide",o.length<2||(!!id&&!isLead()));
- pics=[];renderPics();$("sg").classList.add("hide");$("sg").innerHTML="";dueLbl();dlg.showModal(); }
+ pics=[];renderPics();$("sg").classList.add("hide");$("sg").innerHTML="";kpiFill(t);dueLbl();dlg.showModal(); }
 async function saveTask(){
  if(!$("t").value.trim()) return alert("Cần nhập tiêu đề.");
- const f={title:$("t").value.replace(/\s*\n\s*/g," ").trim(),desc:$("d").value,assignee:$("a").value,due:$("due").value,priority:$("pr").checked?1:0};
+ const f={title:$("t").value.replace(/\s*\n\s*/g," ").trim(),desc:$("d").value,assignee:$("a").value,due:$("due").value,priority:$("pr").checked?1:0,prod:$("pd").value.trim(),leader:ldGet("ld","ldx"),level:$("lv").value};
  try{ if(editId) await db.collection("tasks").doc(editId).update(f);
   else await db.collection("tasks").add({...f,status:0,createdBy:me.uid,createdAt:Date.now()}); dlg.close();
  }catch(e){alert("Không lưu được: "+e.message)} }
@@ -294,19 +335,21 @@ Quy tắc ghi "title":
 - Gộp các ý nhỏ thuộc cùng một việc, không tách vụn, không trùng lặp.
 Quy tắc "desc": 1 đến 3 câu gồm số và ký hiệu văn bản, ngày ban hành, cơ quan ban hành, trích yếu, yêu cầu chính, nơi nhận báo cáo.
 Quy tắc "due": dạng YYYY-MM-DD. Nếu văn bản nêu hạn cụ thể (ví dụ "trước ngày 20/11/2026") thì dùng ngày đó. Nếu chỉ nêu tương đối (ví dụ "trong 05 ngày làm việc kể từ ngày nhận") mà không đủ căn cứ để tính thì để chuỗi rỗng. Không bịa thông tin không có trong văn bản.
-Chỉ trả về JSON là một mảng các đối tượng {"title","desc","due"}.`;
+Quy tắc "prod" (sản phẩm đầu ra cụ thể đơn vị phải hoàn thành): ngắn gọn, tối đa 80 ký tự, dạng "Báo cáo của Đội gửi Phòng PV01", "Kế hoạch của ...", "Tờ trình ...". Không bịa nơi nhận nếu văn bản không nêu.
+Quy tắc "level" (mã cấp giao nhiệm vụ, căn cứ cơ quan ban hành văn bản): "2.2" nếu của Đảng ủy Công an Trung ương hoặc lãnh đạo Bộ Công an; "2.3" nếu của Tỉnh ủy, Hội đồng nhân dân, Ủy ban nhân dân tỉnh hoặc cấp ủy, chính quyền cấp tỉnh; "2.4" nếu của Công an tỉnh hoặc các Cục; "2.5" nếu của một phòng hoặc cấp ủy, chính quyền cấp xã; "2.6" nếu của Công an cấp xã hoặc cấp đội; chuỗi rỗng nếu không xác định được.
+Chỉ trả về JSON là một mảng các đối tượng {"title","desc","due","prod","level"}.`;
  try{
   const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gem.model||"gemini-3.5-flash"}:generateContent`,{method:"POST",
    headers:{"Content-Type":"application/json","x-goog-api-key":gem.key},
    body:JSON.stringify({contents:[{parts:[...pics.map(b=>({inline_data:{mime_type:"image/jpeg",data:b}})),{text:prompt}]}],generationConfig:{responseMimeType:"application/json"}})});
   const j=await r.json(); if(!r.ok)throw new Error((j.error&&j.error.message)||r.status);
   sug=JSON.parse(j.candidates[0].content.parts.map(x=>x.text||"").join("").replace(/```json|```/g,"").trim()); if(!Array.isArray(sug))sug=[];
-  g.innerHTML=sug.length?sug.map((x,i)=>`<label class="sgi"><input type="checkbox" checked data-i="${i}" style="width:auto"><div><b style="font-size:15px">${esc(x.title)}</b><br><small>Hạn: <b>${vn(x.due)||"không nêu"}</b></small><br><small>${esc(x.desc)}</small></div></label>`).join("")+'<button style="margin-top:8px" onclick="addSug()">＋ Thêm các việc đã chọn (giao cho tôi)</button>':"AI không tìm thấy nhiệm vụ rõ ràng trong ảnh.";
+  g.innerHTML=sug.length?sug.map((x,i)=>`<label class="sgi"><input type="checkbox" checked data-i="${i}" style="width:auto"><div><b style="font-size:15px">${esc(x.title)}</b><br><small>Hạn: <b>${vn(x.due)||"không nêu"}</b></small><br><small>${esc(x.desc)}</small>${x.prod?`<br><small>Sản phẩm: <b>${esc(x.prod)}</b></small>`:""}<br><small>Cấp giao: <b>${LVM[x.level]?lvLabel(x.level)+" ("+LVM[x.level][2]+"đ)":"mặc định "+kd().level}</b></small></div></label>`).join("")+'<button style="margin-top:8px" onclick="addSug()">＋ Thêm các việc đã chọn (giao cho tôi)</button>':"AI không tìm thấy nhiệm vụ rõ ràng trong ảnh.";
  }catch(e){g.textContent="Không đọc được: "+e.message} }
 async function addSug(){
  const ids=[...document.querySelectorAll("#sg input:checked")].map(x=>+x.dataset.i);
  try{ for(const i of ids){const x=sug[i];await db.collection("tasks").add({title:String(x.title||"").slice(0,200),desc:String(x.desc||""),assignee:me.uid,
-  due:/^\d{4}-\d{2}-\d{2}$/.test(x.due)?x.due:"",priority:0,status:0,createdBy:me.uid,createdAt:Date.now()})} dlg.close();
+  due:/^\d{4}-\d{2}-\d{2}$/.test(x.due)?x.due:"",priority:0,prod:String(x.prod||"").slice(0,120),leader:kd().leader,level:LVM[x.level]?x.level:kd().level,status:0,createdBy:me.uid,createdAt:Date.now()})} dlg.close();
  }catch(e){alert("Không thêm được: "+e.message)} }
 async function saveGem(){ const m=$("gmsg");
  const k=$("gk").value.trim()||gem.key||"";if(!k){m.textContent="Nhập API key.";return}
@@ -314,11 +357,12 @@ async function saveGem(){ const m=$("gmsg");
   gem={key:k,model:$("gn").value.trim()||"gemini-3.5-flash"};$("gk").value="";m.className="ok";m.textContent="Đã lưu."}catch(e){m.className="";m.textContent="Không lưu được: "+e.message} }
 let resId=null, rpics=[];
 const setStatus=(id,s)=>{ if(+s===2){openResult(id);return} db.collection("tasks").doc(id).update({status:+s}).catch(e=>alert("Không lưu được: "+e.message)) };
-function openResult(id){ resId=id; const t=tasks.find(x=>x.id===id); $("rt").textContent=t.title; $("rr").value=t.result||""; rpics=[];renderRPics();$("rsg").textContent="";rdlg.showModal() }
+function openResult(id){ resId=id; const t=tasks.find(x=>x.id===id); $("rt").textContent=t.title; $("rr").value=t.result||""; rpics=[];renderRPics();$("rsg").textContent="";$("re").value=t.edits||0;$("rd").value=t.doneDate||(t.doneAt?ymd(t.doneAt):today());rPrev();rdlg.showModal() }
 const setRes=v=>{$("rr").value=v};
 async function saveRes(){
  const v=$("rr").value.trim(); if(!v)return alert("Hãy nhập kết quả hoặc bấm “Hoàn thành đúng quy định”.");
- const t=tasks.find(x=>x.id===resId),f={status:2,result:v}; if(t.status!==2||!t.doneAt)f.doneAt=Date.now();
+ if(!$("rd").value)return alert("Chọn ngày hoàn thành thực tế.");
+ const t=tasks.find(x=>x.id===resId),f={status:2,result:v,edits:Math.max(0,parseInt($("re").value)||0),doneDate:$("rd").value}; if(t.status!==2||!t.doneAt)f.doneAt=Date.now();
  try{await db.collection("tasks").doc(resId).update(f);rdlg.close()}catch(e){alert("Không lưu được: "+e.message)} }
 function renderRPics(){
  $("rpv").innerHTML=rpics.map((b,i)=>`<div><img src="data:image/jpeg;base64,${b}"><b onclick="rmRPic(${i})">×</b></div>`).join("");
@@ -363,9 +407,10 @@ function render(){
   <div class="grid"><div class="f ${dc}"><label>Hạn hoàn thành</label><div class="v">${dt}</div></div>
   <div class="f"><label>Người thực hiện</label><div class="v">${esc(name(t.assignee))}</div></div>
   <div class="f s${t.status}"><label>Tình trạng</label><select onchange="setStatus('${t.id}',this.value)">${ST.map((x,i)=>`<option value="${i}" ${i==t.status?"selected":""}>${x}</option>`).join("")}</select></div>
-  ${t.createdBy&&t.createdBy!==t.assignee?`<div class="f"><label>Người giao</label><div class="v">${esc(name(t.createdBy))}</div></div>`:""}${t.status==2?`<div class="f ok" style="grid-column:1/-1"><label>Kết quả</label><div class="v" style="font-weight:500;white-space:pre-wrap">${t.result?esc(t.result):"Chưa ghi kết quả"}</div></div>`:""}</div>
+  ${t.createdBy&&t.createdBy!==t.assignee?`<div class="f"><label>Người giao</label><div class="v">${esc(name(t.createdBy))}</div></div>`:""}${kpiCell(t)}${t.status==2?`<div class="f ok" style="grid-column:1/-1"><label>Kết quả</label><div class="v" style="font-weight:500;white-space:pre-wrap">${t.result?esc(t.result):"Chưa ghi kết quả"}</div></div>`:""}</div>
   <div class="row" style="margin-top:10px;justify-content:flex-end">${t.status==2?`<button class="g s" onclick="openResult('${t.id}')">${t.result?"Sửa kết quả":"Ghi kết quả"}</button>`:""}${can?`<button class="g s" onclick="openTask('${t.id}')">Sửa</button><button class="d" onclick="delTask('${t.id}')">Xóa</button>`:""}</div></div>`}).join("")||'<div class="card">Bạn chưa có công việc. Bấm “Thêm việc” để bắt đầu.</div>';
  if(!$("p1").classList.contains("hide")||!$("p3").classList.contains("hide"))renderStats();
+ if(!$("p3").classList.contains("hide"))kpiSum();
 }
 function renderStats(){
  const q=$("q").value.trim().toLowerCase(),p=$("fp").value,s=$("fs").value,a=$("df").value,b=$("dt").value;
@@ -417,6 +462,58 @@ async function exWeek(){
  const buf=await wb.xlsx.writeBuffer(),a=document.createElement("a");
  a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download="bao-cao-tuan-"+to+".xlsx";a.click();
 }
+
+function rPrev(){const t=tasks.find(x=>x.id===resId);if(!t)return;const k=kpiOf({...t,status:2,edits:+$("re").value||0,doneDate:$("rd").value});
+ $("rk").innerHTML=k?`Điểm giao <b>${k.g}</b> · Số lượng <b>${f2(k.a)}</b> · Chất lượng <b>${f2(k.b)}</b> · Tiến độ <b>${f2(k.c)}</b>${k.late>0?` (chậm ${k.late} ngày)`:""}`:"Việc này chưa chọn cấp giao nhiệm vụ nên chưa tính điểm KPI (bấm Sửa để chọn)."}
+function kdRender(){const k=kd();ldSet("sd","sdx",k.leader);$("sl").innerHTML=lvOptions();$("sl").value=k.level;
+ $("sf").innerHTML=(k.fav||[]).filter(c=>LVM[c]).map(c=>`<span class="tag">${c} <b style="cursor:pointer" onclick="favDel('${c}')">×</b></span>`).join(" ")||"<small>Chưa có</small>";
+ $("sa").innerHTML='<option value="">＋ Thêm cấp hay dùng…</option>'+LV.map(x=>`<option value="${x[0]}">${esc(lvLabel(x[0]))}</option>`).join("")}
+async function kdSave(p){const m=$("kmsg");try{await db.collection("users").doc(me.uid).update({kpi:{...kd(),...p}});m.className="ok";m.textContent="Đã lưu."}catch(e){m.className="";m.textContent="Chưa lưu được: "+e.message}}
+const favDel=c=>kdSave({fav:kd().fav.filter(x=>x!==c)}), favAdd=c=>{if(c&&!kd().fav.includes(c))kdSave({fav:[...kd().fav,c]})}, saveKd=()=>kdSave({leader:ldGet("sd","sdx"),level:$("sl").value});
+
+function kpiInit(){if(!$("km").value){const d=new Date(),m=d.getDate()>=15?new Date(d.getFullYear(),d.getMonth()+1,1):d;$("km").value=m.getFullYear()+"-"+String(m.getMonth()+1).padStart(2,"0")}kpiSum()}
+function kpiRange(){const[y,m]=($("km").value||"").split("-").map(Number);if(!y)return null;const f=d=>d.toLocaleDateString("sv-SE");return{y,m,s:f(new Date(y,m-2,15)),e:f(new Date(y,m-1,14))}}
+const kpiRows=r=>tasks.filter(t=>t.due&&t.due>=r.s&&t.due<=r.e).sort((a,b)=>a.due.localeCompare(b.due)||(a.createdAt||0)-(b.createdAt||0));
+function kpiTot(l){const T={G:0,a:0,b:0,c:0};l.forEach(t=>{const k=kpiOf(t);T.G+=k.g;T.a+=k.a;T.b+=k.b;T.c+=k.c});T.A=T.G?T.a/T.G:0;T.B=T.G?T.b/T.G:0;T.C=T.G?T.c/T.G:0;T.K=(T.A+T.B+T.C)/3*55;return T}
+function kpiSum(){const r=kpiRange(),o=$("ks");if(!r){o.textContent="";return}
+ const all=kpiRows(r),ok=all.filter(t=>LVM[t.level]),T=kpiTot(ok),miss=all.length-ok.length;
+ o.innerHTML=`Kỳ <b>${vn(r.s)} → ${vn(r.e)}</b>: ${all.length} nhiệm vụ có hạn trong kỳ, ${ok.length} việc đã chọn cấp giao nhiệm vụ, ${ok.filter(t=>t.status==2).length} hoàn thành.`+(miss?` <span class="cao">${miss} việc chưa chọn cấp nên chưa tính.</span>`:"")+(ok.length?`<br>Tổng điểm giao <b>${f2(T.G)}</b> · A=<b>${f2(T.A)}</b> · B=<b>${f2(T.B)}</b> · C=<b>${f2(T.C)}</b> · K tập thể = <b>${f2(T.K)}</b>/55`:"")}
+async function exA2(){
+ if(typeof ExcelJS==="undefined")return alert("Chưa tải được thư viện Excel. Kiểm tra kết nối mạng.");
+ const r=kpiRange();if(!r)return alert("Chọn tháng đánh giá.");
+ const l=kpiRows(r).filter(t=>LVM[t.level]);if(!l.length)return alert("Chưa có nhiệm vụ nào trong kỳ này đã chọn cấp giao nhiệm vụ.");
+ const T=kpiTot(l),n=l.length,unit=($("w2").value.trim()||"ĐỘI ...").toUpperCase(),F={name:"Times New Roman",size:12},
+  wb=new ExcelJS.Workbook(),ws=wb.addWorksheet("Mẫu A2"),dz=s=>s?new Date(s+"T00:00:00Z"):"",DF="dd/mm/yyyy";
+ ws.columns=[5,38,24,12,28,30,10,28,13,10,11,12,10,13,10].map(width=>({width}));
+ const m=(a,v,font,al)=>{ws.mergeCells(a);const c=ws.getCell(a.split(":")[0]);c.value=v;c.font={...F,...font};c.alignment={vertical:"middle",wrapText:true,horizontal:"center",...al}};
+ m("A1:D1","CÔNG AN TỈNH TUYÊN QUANG",{bold:true});m("E1:O1","CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",{bold:true});
+ m("A2:D2","PHÒNG THAM MƯU",{bold:true});m("E2:O2","Độc lập - Tự do - Hạnh phúc",{bold:true});
+ m("A3:D3",unit,{bold:true});m("E3:O3",`Tuyên Quang, ngày ${+r.e.slice(8)} tháng ${r.m} năm ${r.y}`,{italic:true});
+ m("A5:O5","Mẫu A2",{bold:true},{horizontal:"left"});m("A6:O6","Chấm điểm nhiệm vụ được giao theo chức năng, nhiệm vụ",{bold:true,size:13});
+ m("A7:O7",`Kỳ đánh giá: tháng ${r.m}/${r.y} (thống kê từ ngày 15 tháng trước đến ngày 14 của tháng đánh giá)`,{italic:true});
+ [["A8:A10","STT"],["B8:B10","Nhiệm vụ"],["C8:G8","Điểm nhiệm vụ được giao"],["H8:O8","Thực tế triển khai và điểm tự chấm"],["C9:C10","Sản phẩm"],["D9:D10","Hạn hoàn thành"],["E9:E10","Lãnh đạo trực tiếp chỉ đạo nhiệm vụ"],["F9:F10","Cấp trình/giao nhiệm vụ/cấp ký"],["G9:G10","Điểm nhiệm vụ được giao"],["H9:H10","Sản phẩm"],["I9:J9","Điểm số lượng (A)"],["K9:M9","Điểm chất lượng (B)"],["N9:O9","Điểm tiến độ (C)"]].forEach(([a,v])=>m(a,v,{bold:true}));
+ [["I10","Hoàn thành/ Chưa hoàn thành"],["J10","Điểm số lượng"],["K10","Tỷ lệ hoàn thành (%)"],["L10","Số lần phải hoàn thiện, chỉnh sửa"],["M10","Điểm chất lượng"],["N10","Ngày hoàn thành thực tế"],["O10","Điểm tiến độ"]].forEach(([a,v])=>{const c=ws.getCell(a);c.value=v;c.font={...F,bold:true};c.alignment={vertical:"middle",wrapText:true,horizontal:"center"}});
+ ws.getRow(10).height=62;
+ const lines=(x,w)=>String(x||"").split("\n").reduce((a,q)=>a+Math.max(1,Math.ceil(q.length/w)),0);
+ l.forEach((t,i)=>{const k=kpiOf(t),d=t.status==2,dd=t.doneDate||(t.doneAt?ymd(t.doneAt):"");
+  const row=ws.addRow([i+1,t.title,t.prod||"",dz(t.due),t.leader||kd().leader,lvLabel(t.level),k.g,d?(t.result||""):"",d?"Hoàn thành":"Chưa hoàn thành",k.a,k.g?k.b/k.g:0,d?(+t.edits||0):"",k.b,d?dz(dd):"",k.c]);
+  row.height=Math.max(34,17*Math.max(lines(t.title,40),lines(t.prod,24),lines(lvLabel(t.level),32),lines(t.leader||kd().leader,30))+8);
+  row.getCell(4).numFmt=DF;row.getCell(14).numFmt=DF;row.getCell(11).numFmt="0%";[7,10,13,15].forEach(c=>row.getCell(c).numFmt="0.00")});
+ const th={style:"thin"},bd={top:th,left:th,bottom:th,right:th},L=10+n;
+ for(let rr=8;rr<=L;rr++)for(let c=1;c<=15;c++){const x=ws.getCell(rr,c);x.border=bd;if(rr>10){x.font=F;x.alignment={vertical:"middle",wrapText:true,horizontal:[2,3,5,6,8].includes(c)?"left":"center"}}}
+ const t1=L+1,t2=L+2,kr=L+4,put=(a,v,fmt,font)=>{const c=ws.getCell(a);c.value=v;c.font={...F,bold:true,...font};c.alignment={vertical:"middle",horizontal:"center",wrapText:true};if(fmt)c.numFmt=fmt;c.border=bd};
+ ws.mergeCells(`A${t1}:F${t1}`);put(`A${t1}`,"Bước 1: Tính điểm tổng tại các cột “Điểm nhiệm vụ được giao”, “Điểm số lượng”, “Điểm chất lượng”, “Điểm tiến độ”",null,{});ws.getCell(`A${t1}`).alignment={wrapText:true,vertical:"middle"};
+ [["G",T.G],["J",T.a],["M",T.b],["O",T.c]].forEach(([c,v])=>put(`${c}${t1}`,{formula:`SUM(${c}11:${c}${L})`,result:v},"0.00"));
+ ws.mergeCells(`A${t2}:G${t2}`);put(`A${t2}`,"Bước 2: Tính điểm hệ số KPI (A, B, C)",null,{});ws.getCell(`A${t2}`).alignment={vertical:"middle"};
+ put(`H${t2}`,"A =");put(`J${t2}`,{formula:`IFERROR(J${t1}/G${t1},0)`,result:T.A},"0.0000");put(`K${t2}`,"B =");put(`M${t2}`,{formula:`IFERROR(M${t1}/G${t1},0)`,result:T.B},"0.0000");put(`N${t2}`,"C =");put(`O${t2}`,{formula:`IFERROR(O${t1}/G${t1},0)`,result:T.C},"0.0000");
+ ws.mergeCells(`A${kr}:J${kr}`);put(`A${kr}`,"K tập thể = (A + B + C) ÷ 3 × 55",null,{});ws.getCell(`A${kr}`).alignment={vertical:"middle"};
+ put(`K${kr}`,{formula:`(J${t2}+M${t2}+O${t2})/3*55`,result:T.K},"0.00",{color:{argb:"FFC00000"}});
+ ws.mergeCells(`A${kr+2}:O${kr+2}`);const nt=ws.getCell(`A${kr+2}`);nt.value="Ghi chú: Đây là kết quả TỰ CHẤM. Mức xếp loại chính thức do Ban Thường vụ Đảng ủy Công an tỉnh xem xét, quyết định.";nt.font={...F,italic:true};nt.alignment={wrapText:true,vertical:"middle"};
+ m(`B${kr+4}:D${kr+4}`,"NGƯỜI LẬP BIỂU",{bold:true});m(`K${kr+4}:O${kr+4}`,"THỦ TRƯỞNG ĐƠN VỊ",{bold:true});
+ ws.pageSetup={paperSize:9,orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0};
+ const buf=await wb.xlsx.writeBuffer(),a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download=`mau-A2-thang-${String(r.m).padStart(2,"0")}-${r.y}.xlsx`;a.click();
+}
 function fillUsers(){
  const o=users.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join(""),k=$("fp").value;
  $("fp").innerHTML='<option value="">Cả đội</option>'+o;$("fp").value=k;
@@ -433,7 +530,7 @@ auth.onAuthStateChanged(async u=>{
  db.collection("config").doc("gemini").get().then(x=>{gem=x.exists?x.data():{};$("gn").value=gem.model||"";$("gk").placeholder=gem.key?"Đã lưu (nhập key mới để thay)":"API key Gemini"}).catch(()=>{});
  ["w2","w6"].forEach(k=>$(k).value=ls(k)||"");wkSel();
  const hdr=()=>{$("who").innerHTML=`<span class="av">${me.avatar||"👤"}</span><span>${esc(me.name)} · ${R[me.role]} ▾</span><div id="mn" class="menu hide"><button onclick="tab(2);$('mn').classList.add('hide')">⚙️ Cài đặt</button><button onclick="auth.signOut()">🚪 Đăng xuất</button></div>`;$("who").onclick=e=>{if(!e.target.closest("#mn"))$("mn").classList.toggle("hide")}};hdr();
- unsub.push(db.collection("users").doc(u.uid).onSnapshot(s=>{if(s.exists){me={uid:u.uid,...s.data()};hdr();fillUsers()}}));
+ unsub.push(db.collection("users").doc(u.uid).onSnapshot(s=>{if(s.exists){me={uid:u.uid,...s.data()};hdr();fillUsers();kdRender()}}));
  unsub.push(db.collection("users").onSnapshot(s=>{users=s.docs.map(x=>({id:x.id,...x.data()}));fillUsers();render()}));
  unsub.push(db.collection("tasks").onSnapshot(s=>{tasks=s.docs.map(x=>({id:x.id,...x.data()}));render()}));
 });
