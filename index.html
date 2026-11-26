@@ -127,7 +127,11 @@ body:has(#login:not(.hide)) header{display:none}
   <div class="card"><h3>Mẫu A2 - Chấm điểm KPI</h3>
    <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Kỳ đánh giá: từ ngày 15 tháng trước đến ngày 14 của tháng được chọn. Tính theo hạn hoàn thành của nhiệm vụ trong kỳ; việc chưa chọn cấp giao nhiệm vụ không được tính. Tên đơn vị lấy ở ô phía trên. Chọn một người để xuất KPI cá nhân; với đội trưởng và đội phó, việc do mình giao cho người khác cũng được tính.</p>
    <label class="lb" style="margin-top:0">Xuất cho</label><select id="kp" onchange="kdClr()"></select>
-   <div id="dw" class="hide"><label class="lb">Hệ số D (để trống nếu chưa có kết quả phân loại)</label><input id="kdD" type="number" step="0.01" min="0" inputmode="decimal" placeholder="VD: 1 hoặc 0.95" oninput="kpiSum()"></div>
+   <div id="dw" class="hide"><label class="lb">Hệ số D - kết quả lãnh đạo, chỉ đạo = số người hoàn thành nhiệm vụ trở lên ÷ tổng số người thuộc quyền quản lý (mặc định 1)</label>
+   <input id="kdD" type="number" step="0.01" min="0" max="1" inputmode="decimal" oninput="kpiSum()">
+   <div class="hint">Cần tính tự động? Nhập hai số dưới đây, hệ số D ở trên sẽ tự cập nhật (VD: 3 người, 2 người hoàn thành → 0,67).</div>
+   <div class="row"><div><label class="lb">Số người thuộc quyền quản lý</label><input id="dN" type="number" min="1" step="1" inputmode="numeric" oninput="dCalc()"></div>
+   <div><label class="lb">Trong đó hoàn thành nhiệm vụ trở lên</label><input id="dH" type="number" min="0" step="1" inputmode="numeric" oninput="dCalc()"></div></div></div>
    <label class="lb">Tháng đánh giá</label><input id="km" type="month" onchange="kpiSum()">
    <div id="ks" style="font-size:14px;margin:8px 0"></div>
    <button onclick="exA2()">⬇ Xuất Mẫu A2 (Excel)</button></div>
@@ -486,16 +490,18 @@ function kpiInit(){if(!$("km").value){const d=new Date(),m=d.getDate()>=15?new D
 function kpiRange(){const[y,m]=($("km").value||"").split("-").map(Number);if(!y)return null;const f=d=>d.toLocaleDateString("sv-SE");return{y,m,s:f(new Date(y,m-2,15)),e:f(new Date(y,m-1,14))}}
 const kpiOwn=(t,u)=>{const x=users.find(v=>v.id===u);return t.assignee===u||!!(x&&x.role!=="canbo"&&t.createdBy===u)};
 const kpiRows=(r,u)=>tasks.filter(t=>t.due&&t.due>=r.s&&t.due<=r.e&&(!u||kpiOwn(t,u))).sort((a,b)=>a.due.localeCompare(b.due)||(a.createdAt||0)-(b.createdAt||0));
-const isLeadU=u=>{const x=users.find(v=>v.id===u);return !!(u&&x&&x.role!=="canbo")}, kpiD=()=>{const v=$("kdD").value.trim();return v===""||isNaN(+v)||+v<0?null:+v}, kdClr=()=>{$("kdD").value="";kpiSum()};
+const isLeadU=u=>{const x=users.find(v=>v.id===u);return !!(u&&x&&x.role!=="canbo")}, kpiD=()=>{const v=$("kdD").value.trim();return v===""||isNaN(+v)||+v<0||+v>1?null:+v}, kdClr=()=>{$("dN").value=$("dH").value="";$("kdD").value=isLeadU($("kp").value)?"1":"";kpiSum()};
+function dCalc(){const n=+$("dN").value,h=+$("dH").value;if(n>0&&$("dH").value!==""&&h>=0&&h<=n){$("kdD").value=String(Math.round(h/n*10000)/10000);kpiSum()}}
 function kpiTot(l,D){const T={G:0,a:0,b:0,c:0};l.forEach(t=>{const k=kpiOf(t);T.G+=k.g;T.a+=k.a;T.b+=k.b;T.c+=k.c});T.A=T.G?T.a/T.G:0;T.B=T.G?T.b/T.G:0;T.C=T.G?T.c/T.G:0;T.K=D==null?(T.A+T.B+T.C)/3*55:(T.A+T.B+T.C+D)/4*55;return T}
 function kpiSum(){const r=kpiRange(),o=$("ks");if(!r){o.textContent="";return}
  $("dw").classList.toggle("hide",!isLeadU($("kp").value));
  const u=$("kp").value,all=kpiRows(r,u),ok=all.filter(t=>LVM[t.level]),D=isLeadU(u)?kpiD():null,T=kpiTot(ok,D),miss=all.length-ok.length;
- o.innerHTML=`Kỳ <b>${vn(r.s)} → ${vn(r.e)}</b>: ${all.length} nhiệm vụ có hạn trong kỳ, ${ok.length} việc đã chọn cấp giao nhiệm vụ, ${ok.filter(t=>t.status==2).length} hoàn thành.`+(miss?` <span class="cao">${miss} việc chưa chọn cấp nên chưa tính.</span>`:"")+(ok.length?`<br>Tổng điểm giao <b>${f2(T.G)}</b> · A=<b>${f2(T.A)}</b> · B=<b>${f2(T.B)}</b> · C=<b>${f2(T.C)}</b> · ${isLeadU(u)?"K người đứng đầu":u?"K cá nhân":"K tập thể"} = <b>${f2(T.K)}</b>/55${isLeadU(u)?(D==null?" (chưa có D, mẫu số 3)":" (D = "+D+", mẫu số 4)"):""}`+(u&&ok.some(t=>t.assignee!==u)?` <small>(gồm ${ok.filter(t=>t.assignee!==u).length} việc do người này giao cho người khác)</small>`:""):"")}
+ o.innerHTML=`Kỳ <b>${vn(r.s)} → ${vn(r.e)}</b>: ${all.length} nhiệm vụ có hạn trong kỳ, ${ok.length} việc đã chọn cấp giao nhiệm vụ, ${ok.filter(t=>t.status==2).length} hoàn thành.`+(miss?` <span class="cao">${miss} việc chưa chọn cấp nên chưa tính.</span>`:"")+(ok.length?`<br>Tổng điểm giao <b>${f2(T.G)}</b> · A=<b>${f2(T.A)}</b> · B=<b>${f2(T.B)}</b> · C=<b>${f2(T.C)}</b> · ${isLeadU(u)?"K người đứng đầu":u?"K cá nhân":"K tập thể"} = <b>${f2(T.K)}</b>/55${isLeadU(u)?(D==null?($("kdD").value.trim()!==""?" (D không hợp lệ: nhập từ 0 đến 1)":" (để trống D, mẫu số 3)"):" (D = "+D+", mẫu số 4)"):""}`+(u&&ok.some(t=>t.assignee!==u)?` <small>(gồm ${ok.filter(t=>t.assignee!==u).length} việc do người này giao cho người khác)</small>`:""):"")}
 async function exA2(){
  if(typeof ExcelJS==="undefined")return alert("Chưa tải được thư viện Excel. Kiểm tra kết nối mạng.");
  const r=kpiRange();if(!r)return alert("Chọn tháng đánh giá.");
  const uid=$("kp").value,l=kpiRows(r,uid).filter(t=>LVM[t.level]);if(!l.length)return alert("Chưa có nhiệm vụ nào trong kỳ này đã chọn cấp giao nhiệm vụ.");
+ if(isLeadU(uid)&&$("kdD").value.trim()!==""&&kpiD()==null)return alert("Hệ số D phải từ 0 đến 1.");
  const Dv=isLeadU(uid)?kpiD():null,T=kpiTot(l,Dv),n=l.length,unit=($("w2").value.trim()||"ĐỘI ...").toUpperCase(),F={name:"Times New Roman",size:12},
   wb=new ExcelJS.Workbook(),ws=wb.addWorksheet("Mẫu A2"),dz=s=>s?new Date(s+"T00:00:00Z"):"",DF="dd/mm/yyyy";
  ws.columns=[5,38,24,12,28,30,10,28,13,10,11,12,10,13,10].map(width=>({width}));
@@ -522,7 +528,7 @@ async function exA2(){
  ws.mergeCells(`A${t2}:G${t2}`);put(`A${t2}`,"Bước 2: Tính điểm hệ số KPI (A, B, C)",null,{});ws.getCell(`A${t2}`).alignment={vertical:"middle"};
  put(`H${t2}`,"A =");put(`J${t2}`,{formula:`IFERROR(J${t1}/G${t1},0)`,result:T.A},"0.0000");put(`K${t2}`,"B =");put(`M${t2}`,{formula:`IFERROR(M${t1}/G${t1},0)`,result:T.B},"0.0000");put(`N${t2}`,"C =");put(`O${t2}`,{formula:`IFERROR(O${t1}/G${t1},0)`,result:T.C},"0.0000");
  ws.mergeCells(`A${kr}:J${kr}`);put(`A${kr}`,(isLeadU(uid)?"K cá nhân người đứng đầu = (A + B + C + D) ÷ 4 × 55 (chưa có D thì ÷ 3)":uid?"K cá nhân = (A + B + C) ÷ 3 × 55":"K tập thể = (A + B + C) ÷ 3 × 55"),null,{});ws.getCell(`A${kr}`).alignment={vertical:"middle"};
- if(isLeadU(uid)){ws.mergeCells(`A${kr-1}:J${kr-1}`);put(`A${kr-1}`,"Hệ số D - đánh giá, xếp loại tập thể, cá nhân thuộc thẩm quyền quản lý (Hướng dẫn 20-HD/ĐUCA; để trống nếu chưa có kết quả phân loại)",null,{});ws.getCell(`A${kr-1}`).alignment={vertical:"middle",wrapText:true};put(`K${kr-1}`,Dv==null?"":Dv,"0.00",{color:{argb:"FF0000FF"}})}
+ if(isLeadU(uid)){ws.mergeCells(`A${kr-1}:J${kr-1}`);put(`A${kr-1}`,"Hệ số D - đánh giá, xếp loại tập thể, cá nhân thuộc thẩm quyền quản lý (Hướng dẫn 20-HD/ĐUCA) = số người hoàn thành nhiệm vụ trở lên ÷ tổng số người thuộc quyền quản lý",null,{});ws.getCell(`A${kr-1}`).alignment={vertical:"middle",wrapText:true};put(`K${kr-1}`,Dv==null?"":Dv,"0.00",{color:{argb:"FF0000FF"}})}
  put(`K${kr}`,{formula:isLeadU(uid)?`IF(K${kr-1}="",(J${t2}+M${t2}+O${t2})/3*55,(J${t2}+M${t2}+O${t2}+K${kr-1})/4*55)`:`(J${t2}+M${t2}+O${t2})/3*55`,result:T.K},"0.00",{color:{argb:"FFC00000"}});
  ws.mergeCells(`A${kr+2}:O${kr+2}`);const nt=ws.getCell(`A${kr+2}`);nt.value="Ghi chú: Đây là kết quả TỰ CHẤM. Mức xếp loại chính thức do Ban Thường vụ Đảng ủy Công an tỉnh xem xét, quyết định.";nt.font={...F,italic:true};nt.alignment={wrapText:true,vertical:"middle"};
  m(`B${kr+4}:D${kr+4}`,"NGƯỜI LẬP BIỂU",{bold:true});m(`K${kr+4}:O${kr+4}`,"THỦ TRƯỞNG ĐƠN VỊ",{bold:true});
