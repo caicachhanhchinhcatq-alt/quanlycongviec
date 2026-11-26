@@ -98,6 +98,7 @@ body:has(#login:not(.hide)) header{display:none}
    <div><b id="s1">0</b><span>Đang thực hiện</span></div><div><b id="s2">0</b><span>Đã xong</span></div><div><b id="s3">0</b><span>Quá hạn</span></div></div></div>
   <div class="row" style="margin-bottom:8px"><h3 id="hd" style="flex:1;margin:0">Nhiệm vụ chi tiết</h3><button onclick="openTask()">＋ Thêm việc</button></div>
   <div id="list"></div>
+  <div id="given"></div>
  </section>
 
  <section id="p1" class="hide">
@@ -406,14 +407,17 @@ function render(){
  $("bdg").textContent=lt.length+sn.length;$("bdg").classList.toggle("hide",!(lt.length+sn.length));
  $("hd").textContent="Nhiệm vụ chi tiết ("+mine.length+" việc)";
  $("s1").textContent=mine.filter(t=>t.status<2).length;$("s2").textContent=mine.filter(t=>t.status==2).length;$("s3").textContent=mine.filter(isLate).length;
- $("list").innerHTML=mine.map(t=>{const can=isLead()||t.createdBy===me.uid,[dc,dt]=dueInfo(t);
+ const card=t=>{const can=isLead()||t.createdBy===me.uid,[dc,dt]=dueInfo(t);
   return `<div class="card task ${isLate(t)?"late":""} ${t.status==2?"done":""}"><div class="t">${esc(t.title)} ${t.priority?'<span class="cao">● Ưu tiên cao</span>':""}</div>
   ${t.desc?`<div class="ds">${esc(t.desc)}</div>`:""}
   <div class="grid"><div class="f ${dc}"><label>Hạn hoàn thành</label><div class="v">${dt}</div></div>
   <div class="f"><label>Người thực hiện</label><div class="v">${esc(name(t.assignee))}</div></div>
   <div class="f s${t.status}"><label>Tình trạng</label><select onchange="setStatus('${t.id}',this.value)">${ST.map((x,i)=>`<option value="${i}" ${i==t.status?"selected":""}>${x}</option>`).join("")}</select></div>
   ${t.createdBy&&t.createdBy!==t.assignee?`<div class="f"><label>Người giao</label><div class="v">${esc(name(t.createdBy))}</div></div>`:""}${kpiCell(t)}${t.status==2?`<div class="f ok" style="grid-column:1/-1"><label>Kết quả</label><div class="v" style="font-weight:500;white-space:pre-wrap">${t.result?esc(t.result):"Chưa ghi kết quả"}</div></div>`:""}</div>
-  <div class="row" style="margin-top:10px;justify-content:flex-end">${t.status==2?`<button class="g s" onclick="openResult('${t.id}')">${t.result?"Sửa kết quả":"Ghi kết quả"}</button>`:""}${can?`<button class="g s" onclick="openTask('${t.id}')">Sửa</button><button class="d" onclick="delTask('${t.id}')">Xóa</button>`:""}</div></div>`}).join("")||'<div class="card">Bạn chưa có công việc. Bấm “Thêm việc” để bắt đầu.</div>';
+  <div class="row" style="margin-top:10px;justify-content:flex-end">${t.status==2?`<button class="g s" onclick="openResult('${t.id}')">${t.result?"Sửa kết quả":"Ghi kết quả"}</button>`:""}${can?`<button class="g s" onclick="openTask('${t.id}')">Sửa</button><button class="d" onclick="delTask('${t.id}')">Xóa</button>`:""}</div></div>`};
+ $("list").innerHTML=mine.map(card).join("")||'<div class="card">Bạn chưa có công việc. Bấm “Thêm việc” để bắt đầu.</div>';
+ const gv=isLead()?tasks.filter(t=>t.createdBy===me.uid&&t.assignee!==me.uid).sort((a,b)=>(a.status==2)-(b.status==2)||(a.due||"9").localeCompare(b.due||"9")):[];
+ $("given").innerHTML=gv.length?`<h3 style="margin:18px 0 8px">Việc tôi đã giao cho người khác (${gv.length} việc)</h3>`+gv.map(card).join(""):"";
  if(!$("p1").classList.contains("hide")||!$("p3").classList.contains("hide"))renderStats();
  if(!$("p3").classList.contains("hide"))kpiSum();
 }
