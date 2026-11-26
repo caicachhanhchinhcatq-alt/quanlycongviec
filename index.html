@@ -132,9 +132,15 @@ body:has(#login:not(.hide)) header{display:none}
    <div class="hint">Cần tính tự động? Nhập hai số dưới đây, hệ số D ở trên sẽ tự cập nhật (VD: 3 người, 2 người hoàn thành → 0,67).</div>
    <div class="row"><div><label class="lb">Số người thuộc quyền quản lý</label><input id="dN" type="number" min="1" step="1" inputmode="numeric" oninput="dCalc()"></div>
    <div><label class="lb">Trong đó hoàn thành nhiệm vụ trở lên</label><input id="dH" type="number" min="0" step="1" inputmode="numeric" oninput="dCalc()"></div></div></div>
-   <label class="lb">Tháng đánh giá</label><input id="km" type="month" onchange="kpiSum()">
+   <label class="lb">Tháng đánh giá (mặc định là kỳ vừa chốt ngày 14)</label><input id="km" type="month" onchange="kpiSum()">
    <div id="ks" style="font-size:14px;margin:8px 0"></div>
-   <button onclick="exA2()">⬇ Xuất Mẫu A2 (Excel)</button></div>
+   <button onclick="exA2()">⬇ Xuất Mẫu A2 (Excel)</button>
+   <hr style="border:0;border-top:1px solid var(--bd,#2a4);margin:14px 0">
+   <h3 style="margin:0 0 4px">Biểu A1 - Khung danh mục nhiệm vụ</h3>
+   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Liệt kê nhiệm vụ chưa hoàn thành có hạn trong kỳ của tháng khung chọn dưới đây, mặc định là tháng kế tiếp (cả đội, không phụ thuộc ô "Xuất cho"). Việc có cấp nhóm 3 xếp vào mục II (chủ động); các việc còn lại vào mục I (được giao).</p>
+   <label class="lb" style="margin-top:0">Tháng của khung nhiệm vụ</label><input id="k1" type="month" onchange="kpiSum()">
+   <div id="a1s" style="font-size:14px;margin:8px 0"></div>
+   <button onclick="exA1()">⬇ Xuất Biểu A1 (Word)</button></div>
  </section>
 
  <section id="p2" class="hide">
@@ -211,6 +217,7 @@ body:has(#login:not(.hide)) header{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyCGo-yt3pX7Ram35QMZysGEF90FRtOiOt8",
@@ -486,17 +493,20 @@ function kdRender(){const k=kd();$("sp").value=(k.prods||[]).join("\n");ldSet("s
 async function kdSave(p){const m=$("kmsg");try{await db.collection("users").doc(me.uid).update({kpi:{...kd(),...p}});m.className="ok";m.textContent="Đã lưu."}catch(e){m.className="";m.textContent="Chưa lưu được: "+e.message}}
 const favDel=c=>kdSave({fav:kd().fav.filter(x=>x!==c)}), favAdd=c=>{if(c&&!kd().fav.includes(c))kdSave({fav:[...kd().fav,c]})}, saveKd=()=>kdSave({leader:ldGet("sd","sdx"),level:$("sl").value,prods:$("sp").value.split("\n").map(x=>x.trim()).filter(Boolean)});
 
-function kpiInit(){if(!$("km").value){const d=new Date(),m=d.getDate()>=15?new Date(d.getFullYear(),d.getMonth()+1,1):d;$("km").value=m.getFullYear()+"-"+String(m.getMonth()+1).padStart(2,"0")}kpiSum()}
-function kpiRange(){const[y,m]=($("km").value||"").split("-").map(Number);if(!y)return null;const f=d=>d.toLocaleDateString("sv-SE");return{y,m,s:f(new Date(y,m-2,15)),e:f(new Date(y,m-1,14))}}
+function kpiInit(){const d=new Date(),ym=(y,m)=>{const x=new Date(y,m,1);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")};
+ if(!$("km").value)$("km").value=ym(d.getFullYear(),d.getMonth()-(d.getDate()>=15?0:1));
+ if(!$("k1").value)$("k1").value=ym(d.getFullYear(),d.getMonth()+1);kpiSum()}
+function kpiRange(id){const[y,m]=($(id||"km").value||"").split("-").map(Number);if(!y)return null;const f=d=>d.toLocaleDateString("sv-SE");return{y,m,s:f(new Date(y,m-2,15)),e:f(new Date(y,m-1,14))}}
 const kpiOwn=(t,u)=>{const x=users.find(v=>v.id===u);return t.assignee===u||!!(x&&x.role!=="canbo"&&t.createdBy===u)};
 const kpiRows=(r,u)=>tasks.filter(t=>t.due&&t.due>=r.s&&t.due<=r.e&&(!u||kpiOwn(t,u))).sort((a,b)=>a.due.localeCompare(b.due)||(a.createdAt||0)-(b.createdAt||0));
 const isLeadU=u=>{const x=users.find(v=>v.id===u);return !!(u&&x&&x.role!=="canbo")}, kpiD=()=>{const v=$("kdD").value.trim();return v===""||isNaN(+v)||+v<0||+v>1?null:+v}, kdClr=()=>{$("dN").value=$("dH").value="";$("kdD").value=isLeadU($("kp").value)?"1":"";kpiSum()};
 function dCalc(){const n=+$("dN").value,h=+$("dH").value;if(n>0&&$("dH").value!==""&&h>=0&&h<=n){$("kdD").value=String(Math.round(h/n*10000)/10000);kpiSum()}}
 function kpiTot(l,D){const T={G:0,a:0,b:0,c:0};l.forEach(t=>{const k=kpiOf(t);T.G+=k.g;T.a+=k.a;T.b+=k.b;T.c+=k.c});T.A=T.G?T.a/T.G:0;T.B=T.G?T.b/T.G:0;T.C=T.G?T.c/T.G:0;T.K=D==null?(T.A+T.B+T.C)/3*55:(T.A+T.B+T.C+D)/4*55;return T}
-function kpiSum(){const r=kpiRange(),o=$("ks");if(!r){o.textContent="";return}
+function kpiSum(){const r1=kpiRange("k1");$("a1s").textContent=r1?`Khung nhiệm vụ tháng ${r1.m}/${r1.y} (kỳ ${vn(r1.s)} → ${vn(r1.e)}): ${a1rows(r1).length} nhiệm vụ chưa hoàn thành, có hạn trong kỳ.`:"";
+ const r=kpiRange(),o=$("ks");if(!r){o.textContent="";return}
  $("dw").classList.toggle("hide",!isLeadU($("kp").value));
- const u=$("kp").value,all=kpiRows(r,u),ok=all.filter(t=>LVM[t.level]),D=isLeadU(u)?kpiD():null,T=kpiTot(ok,D),miss=all.length-ok.length;
- o.innerHTML=`Kỳ <b>${vn(r.s)} → ${vn(r.e)}</b>: ${all.length} nhiệm vụ có hạn trong kỳ, ${ok.length} việc đã chọn cấp giao nhiệm vụ, ${ok.filter(t=>t.status==2).length} hoàn thành.`+(miss?` <span class="cao">${miss} việc chưa chọn cấp nên chưa tính.</span>`:"")+(ok.length?`<br>Tổng điểm giao <b>${f2(T.G)}</b> · A=<b>${f2(T.A)}</b> · B=<b>${f2(T.B)}</b> · C=<b>${f2(T.C)}</b> · ${isLeadU(u)?"K người đứng đầu":u?"K cá nhân":"K tập thể"} = <b>${f2(T.K)}</b>/55${isLeadU(u)?(D==null?($("kdD").value.trim()!==""?" (D không hợp lệ: nhập từ 0 đến 1)":" (để trống D, mẫu số 3)"):" (D = "+D+", mẫu số 4)"):""}`+(u&&ok.some(t=>t.assignee!==u)?` <small>(gồm ${ok.filter(t=>t.assignee!==u).length} việc do người này giao cho người khác)</small>`:""):"")}
+  const u=$("kp").value,all=kpiRows(r,u),ok=all.filter(t=>LVM[t.level]),D=isLeadU(u)?kpiD():null,T=kpiTot(ok,D),miss=all.length-ok.length;
+ o.innerHTML=`Kỳ <b>${vn(r.s)} → ${vn(r.e)}</b>: ${all.length} nhiệm vụ có hạn trong kỳ, ${ok.length} việc đã chọn cấp giao nhiệm vụ, ${ok.filter(t=>t.status==2).length} hoàn thành.`+(r.e>=today()?` <span class="cao">Kỳ chưa kết thúc: số liệu tạm tính.</span>`:"")+(miss?` <span class="cao">${miss} việc chưa chọn cấp nên chưa tính.</span>`:"")+(ok.length?`<br>Tổng điểm giao <b>${f2(T.G)}</b> · A=<b>${f2(T.A)}</b> · B=<b>${f2(T.B)}</b> · C=<b>${f2(T.C)}</b> · ${isLeadU(u)?"K người đứng đầu":u?"K cá nhân":"K tập thể"} = <b>${f2(T.K)}</b>/55${isLeadU(u)?(D==null?($("kdD").value.trim()!==""?" (D không hợp lệ: nhập từ 0 đến 1)":" (để trống D, mẫu số 3)"):" (D = "+D+", mẫu số 4)"):""}`+(u&&ok.some(t=>t.assignee!==u)?` <small>(gồm ${ok.filter(t=>t.assignee!==u).length} việc do người này giao cho người khác)</small>`:""):"")}
 async function exA2(){
  if(typeof ExcelJS==="undefined")return alert("Chưa tải được thư viện Excel. Kiểm tra kết nối mạng.");
  const r=kpiRange();if(!r)return alert("Chọn tháng đánh giá.");
@@ -541,6 +551,36 @@ function selAll(v){const ps=+$("ps").value;rows.slice((pg-1)*ps,pg*ps).forEach(t
 function selUi(){$("bn").textContent=sel.size;$("bd").classList.toggle("hide",!(isLead()&&sel.size))}
 async function delSel(){if(!sel.size||!confirm("Xóa vĩnh viễn "+sel.size+" công việc đã chọn? Không khôi phục được."))return;
  try{const b=db.batch();[...sel].forEach(id=>b.delete(db.collection("tasks").doc(id)));await b.commit();sel.clear();selUi()}catch(e){alert("Không xóa được: "+e.message)}}
+const a1rows=r=>tasks.filter(t=>t.status!==2&&t.due&&t.due>=r.s&&t.due<=r.e).sort((a,b)=>a.due.localeCompare(b.due)||(a.createdAt||0)-(b.createdAt||0));
+async function exA1(){
+ if(typeof docx==="undefined")return alert("Chưa tải được thư viện Word. Kiểm tra kết nối mạng.");
+ const r=kpiRange("k1");if(!r)return alert("Chọn tháng của khung nhiệm vụ.");
+ const l=a1rows(r);if(!l.length)return alert("Không có nhiệm vụ chưa hoàn thành nào có hạn trong kỳ này.");
+ const{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,BorderStyle,PageOrientation,VerticalAlign,TableLayoutType}=docx,
+  unit=$("w2").value.trim()||"Đội …",FT="Times New Roman",C=AlignmentType.CENTER,Lf=AlignmentType.LEFT,
+  run=(t,o={})=>new TextRun({text:t,font:FT,size:26,...o}),
+  para=(t,al,o={},po={})=>new Paragraph({alignment:al,...po,children:[run(t,o)]}),
+  NB={style:BorderStyle.NONE,size:0,color:"FFFFFF"},nob={top:NB,bottom:NB,left:NB,right:NB},
+  cell=(t,w,al,o={},b)=>new TableCell({width:{size:w,type:WidthType.DXA},verticalAlign:VerticalAlign.CENTER,margins:{top:60,bottom:60,left:90,right:90},borders:b,children:String(t).split("\n").map(x=>para(x,al,o))}),
+  W=[850,4820,2268,1814,3459,1417],
+  head=["STT","Nhiệm vụ","Đơn vị/địa phương chủ trì","Thời hạn hoàn thành","Kết quả sản phẩm đầu ra\n(có dữ liệu kiểm chứng cụ thể, có tác động tích cực đến ANTT, vì Đảng, vì dân)","Điểm nhiệm vụ"],
+  tbl=rows=>new Table({width:{size:W.reduce((a,b)=>a+b),type:WidthType.DXA},columnWidths:W,layout:TableLayoutType.FIXED,rows:[
+   new TableRow({tableHeader:true,children:head.map((h,i)=>cell(h,W[i],C,{bold:true}))}),
+   ...(rows.length?rows.map((t,i)=>new TableRow({cantSplit:true,children:[cell(i+1,W[0],C),cell(t.title,W[1],Lf),cell(unit,W[2],C),cell(vn(t.due),W[3],C),cell(t.prod||"",W[4],Lf),cell(LVM[t.level]?LVM[t.level][2]:"",W[5],C)]})):
+    [new TableRow({children:[cell("",W[0],C),cell("(Không có nhiệm vụ)",W[1],Lf,{italics:true}),...[2,3,4,5].map(k=>cell("",W[k],C))]})])]}),
+  sec2=l.filter(t=>(t.level||"").startsWith("3.")),sec1=l.filter(t=>!sec2.includes(t)),d=new Date(),
+  lines=(a,al,o)=>a.map(x=>para(x,al,o)),
+  hdr=new Table({width:{size:14628,type:WidthType.DXA},columnWidths:[6000,8628],layout:TableLayoutType.FIXED,borders:{...nob,insideHorizontal:NB,insideVertical:NB},rows:[new TableRow({children:[
+   new TableCell({width:{size:6000,type:WidthType.DXA},borders:nob,children:lines(["CÔNG AN TỈNH TUYÊN QUANG","PHÒNG THAM MƯU",unit.toUpperCase()],C,{bold:true})}),
+   new TableCell({width:{size:8628,type:WidthType.DXA},borders:nob,children:[...lines(["CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM","Độc lập - Tự do - Hạnh phúc"],C,{bold:true}),para("",C),para(`Tuyên Quang, ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`,C,{italics:true})]})]})]}),
+  gap=()=>para("",Lf),
+  doc=new Document({sections:[{properties:{page:{size:{width:11906,height:16838,orientation:PageOrientation.LANDSCAPE},margin:{top:1701,bottom:1021,left:1191,right:1021}}},children:[
+   hdr,gap(),para(`Thông báo Khung danh mục nhiệm vụ công tác trọng tâm tháng ${r.m}/${r.y}`,C,{bold:true,size:28}),gap(),
+   para("I. Nhiệm vụ được giao",Lf,{bold:true}),tbl(sec1),gap(),
+   para("II. Nhiệm vụ chủ động trên địa bàn của Công an đơn vị, địa phương (có hạn trong tháng)",Lf,{bold:true}),tbl(sec2)]}]});
+ const blob=await Packer.toBlob(doc),a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);a.download=`bieu-A1-thang-${String(r.m).padStart(2,"0")}-${r.y}.docx`;a.click();
+}
 function fillUsers(){
  const o=users.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join(""),k=$("fp").value;
  $("fp").innerHTML='<option value="">Cả đội</option>'+o;$("fp").value=k;const k2=$("kp").value;$("kp").innerHTML='<option value="">Cả đội (KPI tập thể)</option>'+o;$("kp").value=k2;
