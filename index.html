@@ -77,7 +77,8 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
 .lg small{display:block;margin-top:14px;color:var(--mu);font-size:12px}
 body:has(#login:not(.hide)) header{display:none}
 .xw{position:sticky;top:0;height:0;text-align:right;z-index:3}.xb{width:38px;height:38px;padding:0;margin:-6px -6px 0 0;border-radius:50%;background:var(--bg);font-size:18px;line-height:1}dialog h3{padding-right:42px}
-</style></style></head><body data-t="teal">
+input[type=date],input[type=month]{cursor:pointer}
+</style></head><body data-t="teal">
 <header><b>QUẢN LÝ CÔNG VIỆC ĐỘI CÔNG TÁC</b><span id="who"></span></header>
 <main>
 <div id="login" class="hide"><div class="card lg">
@@ -136,11 +137,11 @@ body:has(#login:not(.hide)) header{display:none}
    <div id="ks" style="font-size:14px;margin:8px 0"></div>
    <button onclick="exA2()">⬇ Xuất Mẫu A2 (Excel)</button>
    <hr style="border:0;border-top:1px solid var(--bd,#2a4);margin:14px 0">
-   <h3 style="margin:0 0 4px">Biểu A1 - Khung danh mục nhiệm vụ</h3>
-   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Liệt kê nhiệm vụ chưa hoàn thành có hạn trong kỳ của tháng khung chọn dưới đây, mặc định là tháng kế tiếp (cả đội, không phụ thuộc ô "Xuất cho"). Việc có cấp nhóm 3 xếp vào mục II (chủ động); các việc còn lại vào mục I (được giao).</p>
+   <h3 style="margin:0 0 4px">Mẫu A1 - Khung danh mục nhiệm vụ</h3>
+   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Liệt kê các nhiệm vụ chưa hoàn thành có hạn trong kỳ của tháng khung được chọn bên dưới (mặc định là tháng kế tiếp). Số liệu của cả đội, không phụ thuộc ô “Xuất cho”. Nhiệm vụ có cấp giao thuộc nhóm 3 (văn bản, báo cáo do lãnh đạo ký) xếp vào mục II (nhiệm vụ chủ động); các nhiệm vụ còn lại, kể cả việc chưa chọn cấp, xếp vào mục I (nhiệm vụ được giao).</p>
    <label class="lb" style="margin-top:0">Tháng của khung nhiệm vụ</label><input id="k1" type="month" onchange="kpiSum()">
    <div id="a1s" style="font-size:14px;margin:8px 0"></div>
-   <button onclick="exA1()">⬇ Xuất Biểu A1 (Word)</button></div>
+   <button onclick="exA1()">⬇ Xuất Mẫu A1 (Excel)</button></div>
  </section>
 
  <section id="p2" class="hide">
@@ -217,7 +218,6 @@ body:has(#login:not(.hide)) header{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyCGo-yt3pX7Ram35QMZysGEF90FRtOiOt8",
@@ -553,34 +553,36 @@ async function delSel(){if(!sel.size||!confirm("Xóa vĩnh viễn "+sel.size+" c
  try{const b=db.batch();[...sel].forEach(id=>b.delete(db.collection("tasks").doc(id)));await b.commit();sel.clear();selUi()}catch(e){alert("Không xóa được: "+e.message)}}
 const a1rows=r=>tasks.filter(t=>t.status!==2&&t.due&&t.due>=r.s&&t.due<=r.e).sort((a,b)=>a.due.localeCompare(b.due)||(a.createdAt||0)-(b.createdAt||0));
 async function exA1(){
- if(typeof docx==="undefined")return alert("Chưa tải được thư viện Word. Kiểm tra kết nối mạng.");
+ if(typeof ExcelJS==="undefined")return alert("Chưa tải được thư viện Excel. Kiểm tra kết nối mạng.");
  const r=kpiRange("k1");if(!r)return alert("Chọn tháng của khung nhiệm vụ.");
  const l=a1rows(r);if(!l.length)return alert("Không có nhiệm vụ chưa hoàn thành nào có hạn trong kỳ này.");
- const{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,BorderStyle,PageOrientation,VerticalAlign,TableLayoutType}=docx,
-  unit=$("w2").value.trim()||"Đội …",FT="Times New Roman",C=AlignmentType.CENTER,Lf=AlignmentType.LEFT,
-  run=(t,o={})=>new TextRun({text:t,font:FT,size:26,...o}),
-  para=(t,al,o={},po={})=>new Paragraph({alignment:al,...po,children:[run(t,o)]}),
-  NB={style:BorderStyle.NONE,size:0,color:"FFFFFF"},nob={top:NB,bottom:NB,left:NB,right:NB},
-  cell=(t,w,al,o={},b)=>new TableCell({width:{size:w,type:WidthType.DXA},verticalAlign:VerticalAlign.CENTER,margins:{top:60,bottom:60,left:90,right:90},borders:b,children:String(t).split("\n").map(x=>para(x,al,o))}),
-  W=[850,4820,2268,1814,3459,1417],
-  head=["STT","Nhiệm vụ","Đơn vị/địa phương chủ trì","Thời hạn hoàn thành","Kết quả sản phẩm đầu ra\n(có dữ liệu kiểm chứng cụ thể, có tác động tích cực đến ANTT, vì Đảng, vì dân)","Điểm nhiệm vụ"],
-  tbl=rows=>new Table({width:{size:W.reduce((a,b)=>a+b),type:WidthType.DXA},columnWidths:W,layout:TableLayoutType.FIXED,rows:[
-   new TableRow({tableHeader:true,children:head.map((h,i)=>cell(h,W[i],C,{bold:true}))}),
-   ...(rows.length?rows.map((t,i)=>new TableRow({cantSplit:true,children:[cell(i+1,W[0],C),cell(t.title,W[1],Lf),cell(unit,W[2],C),cell(vn(t.due),W[3],C),cell(t.prod||"",W[4],Lf),cell(LVM[t.level]?LVM[t.level][2]:"",W[5],C)]})):
-    [new TableRow({children:[cell("",W[0],C),cell("(Không có nhiệm vụ)",W[1],Lf,{italics:true}),...[2,3,4,5].map(k=>cell("",W[k],C))]})])]}),
-  sec2=l.filter(t=>(t.level||"").startsWith("3.")),sec1=l.filter(t=>!sec2.includes(t)),d=new Date(),
-  lines=(a,al,o)=>a.map(x=>para(x,al,o)),
-  hdr=new Table({width:{size:14628,type:WidthType.DXA},columnWidths:[6000,8628],layout:TableLayoutType.FIXED,borders:{...nob,insideHorizontal:NB,insideVertical:NB},rows:[new TableRow({children:[
-   new TableCell({width:{size:6000,type:WidthType.DXA},borders:nob,children:lines(["CÔNG AN TỈNH TUYÊN QUANG","PHÒNG THAM MƯU",unit.toUpperCase()],C,{bold:true})}),
-   new TableCell({width:{size:8628,type:WidthType.DXA},borders:nob,children:[...lines(["CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM","Độc lập - Tự do - Hạnh phúc"],C,{bold:true}),para("",C),para(`Tuyên Quang, ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`,C,{italics:true})]})]})]}),
-  gap=()=>para("",Lf),
-  doc=new Document({sections:[{properties:{page:{size:{width:11906,height:16838,orientation:PageOrientation.LANDSCAPE},margin:{top:1701,bottom:1021,left:1191,right:1021}}},children:[
-   hdr,gap(),para(`Thông báo Khung danh mục nhiệm vụ công tác trọng tâm tháng ${r.m}/${r.y}`,C,{bold:true,size:28}),gap(),
-   para("I. Nhiệm vụ được giao",Lf,{bold:true}),tbl(sec1),gap(),
-   para("II. Nhiệm vụ chủ động trên địa bàn của Công an đơn vị, địa phương (có hạn trong tháng)",Lf,{bold:true}),tbl(sec2)]}]});
- const blob=await Packer.toBlob(doc),a=document.createElement("a");
- a.href=URL.createObjectURL(blob);a.download=`bieu-A1-thang-${String(r.m).padStart(2,"0")}-${r.y}.docx`;a.click();
+ const unit=$("w2").value.trim()||"Đội …",F={name:"Times New Roman",size:13},wb=new ExcelJS.Workbook(),ws=wb.addWorksheet("Mẫu A1"),dz=s=>new Date(s+"T00:00:00Z"),d=new Date(),
+  sec2=l.filter(t=>(t.level||"").startsWith("3.")),sec1=l.filter(t=>!sec2.includes(t)),th={style:"thin"},bd={top:th,left:th,bottom:th,right:th},
+  lines=(x,w)=>String(x||"").split("\n").reduce((n,q)=>n+Math.max(1,Math.ceil(q.length/w)),0);
+ ws.columns=[6,50,24,14,42,12].map(width=>({width}));
+ const m=(a,v,font,al)=>{ws.mergeCells(a);const c=ws.getCell(a.split(":")[0]);c.value=v;c.font={...F,...font};c.alignment={vertical:"middle",wrapText:true,horizontal:"center",...al}};
+ m("A1:C1","CÔNG AN TỈNH TUYÊN QUANG",{bold:true});m("D1:F1","CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",{bold:true});
+ m("A2:C2","PHÒNG THAM MƯU",{bold:true});m("D2:F2","Độc lập - Tự do - Hạnh phúc",{bold:true});
+ m("A3:C3",unit.toUpperCase(),{bold:true});m("D3:F3",`Tuyên Quang, ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`,{italic:true});
+ m("A5:F5","Mẫu A1",{bold:true},{horizontal:"left"});
+ m("A6:F6",`Thông báo Khung danh mục nhiệm vụ công tác trọng tâm tháng ${r.m}/${r.y}`,{bold:true,size:14});
+ let row=8;
+ const head=["STT","Nhiệm vụ","Đơn vị/địa phương chủ trì","Thời hạn hoàn thành","Kết quả sản phẩm đầu ra\n(có dữ liệu kiểm chứng cụ thể, có tác động tích cực đến ANTT, vì Đảng, vì dân)","Điểm nhiệm vụ"],
+ put=(rw,vals,o={})=>{vals.forEach((v,i)=>{const c=rw.getCell(i+1);c.value=v;c.font={...F,...(o.font||{})};c.border=bd;c.alignment={vertical:"middle",wrapText:true,horizontal:[1,3,4,6].includes(i+1)||o.center?"center":"left"}})},
+ table=(title,arr)=>{
+  m(`A${row}:F${row}`,title,{bold:true},{horizontal:"left"});row++;
+  const h=ws.getRow(row);put(h,head,{font:{bold:true},center:true});h.height=64;row++;
+  if(!arr.length){put(ws.getRow(row),["","(Không có nhiệm vụ)","","","",""],{font:{italic:true}});row++}
+  arr.forEach((t,i)=>{const rw=ws.getRow(row);put(rw,[i+1,t.title,unit,dz(t.due),t.prod||"",LVM[t.level]?LVM[t.level][2]:""]);
+   rw.getCell(4).numFmt="dd/mm/yyyy";rw.height=Math.max(30,17*Math.max(lines(t.title,52),lines(t.prod,44),lines(unit,24))+8);row++});
+  row++};
+ table("I. Nhiệm vụ được giao",sec1);
+ table("II. Nhiệm vụ chủ động trên địa bàn của Công an đơn vị, địa phương (có hạn trong tháng)",sec2);
+ ws.pageSetup={paperSize:9,orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0};
+ const buf=await wb.xlsx.writeBuffer(),a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download=`mau-A1-thang-${String(r.m).padStart(2,"0")}-${r.y}.xlsx`;a.click();
 }
+document.addEventListener("click",e=>{const i=e.target;if(i&&i.tagName==="INPUT"&&(i.type==="date"||i.type==="month")){try{i.showPicker()}catch(_){}}});
 function fillUsers(){
  const o=users.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join(""),k=$("fp").value;
  $("fp").innerHTML='<option value="">Cả đội</option>'+o;$("fp").value=k;const k2=$("kp").value;$("kp").innerHTML='<option value="">Cả đội (KPI tập thể)</option>'+o;$("kp").value=k2;
