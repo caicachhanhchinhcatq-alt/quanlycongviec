@@ -76,7 +76,8 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
 .lg #err{min-height:20px;margin:6px 0 0}
 .lg small{display:block;margin-top:14px;color:var(--mu);font-size:12px}
 body:has(#login:not(.hide)) header{display:none}
-</style></head><body data-t="teal">
+.xw{position:sticky;top:0;height:0;text-align:right;z-index:3}.xb{width:38px;height:38px;padding:0;margin:-6px -6px 0 0;border-radius:50%;background:var(--bg);font-size:18px;line-height:1}dialog h3{padding-right:42px}
+</style></style></head><body data-t="teal">
 <header><b>QUẢN LÝ CÔNG VIỆC ĐỘI CÔNG TÁC</b><span id="who"></span></header>
 <main>
 <div id="login" class="hide"><div class="card lg">
@@ -144,7 +145,8 @@ body:has(#login:not(.hide)) header{display:none}
    <label class="lb" style="margin-top:0">Lãnh đạo chỉ đạo / ký thường gặp</label><select id="sd" onchange="ldChg('sd','sdx')"></select><input id="sdx" class="hide" placeholder="Nhập cấp bậc, họ tên - chức vụ">
    <label class="lb">Cấp giao nhiệm vụ mặc định</label><select id="sl"></select>
    <label class="lb">Cấp hay dùng (hiện đầu danh sách chọn)</label><div id="sf" class="chips"></div><select id="sa" onchange="favAdd(this.value);this.value=''"></select>
-   <button onclick="saveKd()" style="margin-top:8px">Lưu mặc định</button> <span id="kmsg"></span></div>
+   <label class="lb">Sản phẩm hay dùng (mỗi dòng một mục, hiện thành nút khi thêm việc)</label><textarea id="sp" rows="5"></textarea>
+   <button onclick="saveKd()"<button onclick="saveKd()" style="margin-top:8px">Lưu mặc định</button> <span id="kmsg"></span></div>
   <div id="gm" class="card hide"><h3>AI Gemini (gợi ý việc từ ảnh công văn)</h3>
    <input id="gk" type="password" placeholder="API key Gemini"><input id="gn" placeholder="Tên model (để trống = gemini-3.5-flash)">
    <button onclick="saveGem()">Lưu</button> <span id="gmsg"></span>
@@ -157,7 +159,7 @@ body:has(#login:not(.hide)) header{display:none}
 </div>
 </main>
 
-<dialog id="dlg"><h3 id="dt0">Thêm công việc</h3>
+<dialog id="dlg"><div class="xw"><button class="g xb" onclick="dlg.close()" aria-label="Đóng">✕</button></div><h3 id="dt0">Thêm công việc</h3>
  <button class="g" style="width:100%;white-space:nowrap;font-size:14px;padding:9px 6px" onclick="$('cam').click()">📷 Ảnh công văn (nhiều trang)</button>
  <input id="cam" type="file" accept="image/*" multiple class="hide" onchange="addPics(this.files);this.value=''">
  <div id="pv" class="pv"></div>
@@ -169,7 +171,8 @@ body:has(#login:not(.hide)) header{display:none}
  <div class="lh"><label class="lb">Nội dung / căn cứ</label><button class="g mic" onclick="dictate('d',this)">🎤 Nói</button></div>
  <textarea id="d" class="big" rows="4" placeholder="VD: Theo Công văn số ... ngày ..."></textarea>
  <div class="lh"><label class="lb">Sản phẩm</label><button class="g mic" onclick="dictate('pd',this)">🎤 Nói</button></div>
- <input id="pd" placeholder="VD: Báo cáo của Đội gửi Phòng PV01">
+ <input id="pd" placeholder="Chọn bên dưới hoặc nhập, VD: Báo cáo của Đội gửi Phòng PV01">
+ <div id="pdc" class="chips"></div>
  <label class="lb">Hạn hoàn thành: <b id="dl" style="color:var(--tx);font-size:14px;text-transform:none"></b></label>
  <input id="due" type="date" onchange="dueLbl()" onclick="try{this.showPicker()}catch(e){}">
  <div class="chips"><button class="g s" onclick="setDue(0)">Hôm nay</button><button class="g s" onclick="setDue(1)">Ngày mai</button><button class="g s" onclick="setDue(3)">3 ngày</button><button class="g s" onclick="setDue(7)">1 tuần</button><button class="g s" onclick="setDue('m')">Cuối tháng</button></div>
@@ -181,7 +184,7 @@ body:has(#login:not(.hide)) header{display:none}
  <div class="row" style="margin-top:10px"><button onclick="saveTask()">Lưu</button><button class="g" onclick="dlg.close()">Hủy</button></div>
 </dialog>
 
-<dialog id="rdlg"><h3>Kết quả thực hiện</h3>
+<dialog id="rdlg"><div class="xw"><button class="g xb" onclick="rdlg.close()" aria-label="Đóng">✕</button></div><h3>Kết quả thực hiện</h3>
  <div id="rt" style="font-weight:600;margin-bottom:8px"></div>
  <button class="g" style="width:100%;white-space:nowrap;font-size:14px;padding:9px 6px" onclick="setRes('Hoàn thành đúng quy định')">✅ Hoàn thành đúng quy định</button>
  <button class="g" style="width:100%;white-space:nowrap;font-size:14px;padding:9px 6px;margin-top:6px" onclick="$('rcam').click()">📷 Ảnh văn bản kết quả (trang đầu hoặc cả bộ)</button>
@@ -233,7 +236,7 @@ const LV=[["1.1","Trình Ban Chấp hành Trung ương - Ban hành",60],["1.2","
 ["3.1","Văn bản, báo cáo do lãnh đạo Bộ Công an ký",45],["3.2","Văn bản, báo cáo do lãnh đạo cấp ủy, chính quyền cấp tỉnh ký",35],["3.3","Văn bản, báo cáo do lãnh đạo cấp Cục, Công an cấp tỉnh ký",30],["3.4","Văn bản, báo cáo do lãnh đạo cấp phòng ký",20],["3.5","Văn bản, báo cáo do lãnh đạo Công an cấp xã, cấp đội ký",15]];
 const LVM=Object.fromEntries(LV.map(x=>[x[0],x])), lvLabel=c=>LVM[c]?c+". "+LVM[c][1]:"", f2=x=>Math.round(x*100)/100;
 const LEADERS=["Thiếu tướng Nguyễn Đức Thuận - Giám đốc Công an tỉnh","Đại tá Lục Thế Hưng - Phó Giám đốc Công an tỉnh","Đại tá Hoàng Văn Mạnh - Phó Giám đốc Công an tỉnh","Đại tá Dương Thanh Bình - Phó Giám đốc Công an tỉnh","Đại tá Đỗ Tiến Dũng - Phó Giám đốc Công an tỉnh","Đại tá Nguyễn Thành Chung - Phó Giám đốc Công an tỉnh","Đại tá Chu Quang Trung - Phó Giám đốc Công an tỉnh","Đại tá Ma Quang Trung - Phó Giám đốc Công an tỉnh"];
-const KDEF={leader:LEADERS[1],level:"2.4",fav:["2.3","2.4","2.5"]}, kd=()=>({...KDEF,...((me&&me.kpi)||{})});
+const KDEF={leader:LEADERS[1],level:"2.4",fav:["2.3","2.4","2.5"],prods:["Kế hoạch","Báo cáo","Công văn","Tờ trình","Thông báo","Kết luận","Tổ chức hội nghị","Chuẩn bị tài liệu","Phục vụ cuộc họp"]}, kd=()=>({...KDEF,...((me&&me.kpi)||{})});
 function lvOptions(){const fav=(kd().fav||[]).filter(c=>LVM[c]),opt=c=>`<option value="${c}">${esc(lvLabel(c))} (${LVM[c][2]}đ)</option>`,
  grp=(n,p)=>`<optgroup label="${n}">${LV.filter(x=>x[0].startsWith(p)).map(x=>opt(x[0])).join("")}</optgroup>`;
  return '<option value="">— Chưa chọn —</option>'+(fav.length?`<optgroup label="Hay dùng">${fav.map(opt).join("")}</optgroup>`:"")+grp("Nhóm 1 - Có sản phẩm trình lên các cấp","1.")+grp("Nhóm 2 - Triển khai theo chỉ đạo","2.")+grp("Nhóm 3 - Chủ động báo cáo lên cấp trên","3.")}
@@ -241,7 +244,8 @@ const ldSet=(s,i,v)=>{const sel=$(s),inp=$(i);sel.innerHTML=LEADERS.map(x=>`<opt
  if(!v||LEADERS.includes(v)){sel.value=v||LEADERS[0];inp.value=""}else{sel.value="__x";inp.value=v}inp.classList.toggle("hide",sel.value!=="__x")};
 const ldChg=(s,i)=>$(i).classList.toggle("hide",$(s).value!=="__x"), ldGet=(s,i)=>$(s).value==="__x"?$(i).value.trim():$(s).value;
 const lvPts=()=>{$("lvp").textContent=LVM[$("lv").value]?LVM[$("lv").value][2]+" điểm":"—"};
-function kpiFill(t){const k=kd();$("pd").value=t.prod||"";ldSet("ld","ldx",t.leader||k.leader);$("lv").innerHTML=lvOptions();$("lv").value=t.level||k.level;lvPts()}
+const pdPick=i=>{$("pd").value=kd().prods[i];$("pd").focus()};
+function kpiFill(t){const k=kd();$("pdc").innerHTML=(k.prods||[]).map((p,i)=>`<button type="button" class="g s" onclick="pdPick(${i})">${esc(p)}</button>`).join("");$("pd").value=t.prod||"";ldSet("ld","ldx",t.leader||k.leader);$("lv").innerHTML=lvOptions();$("lv").value=t.level||k.level;lvPts()}
 /* A: số lượng; B: chất lượng (số lần chỉnh sửa); C: tiến độ (số ngày chậm) - Điều 5 Hướng dẫn */
 function kpiOf(t){const L=LVM[t.level];if(!L)return null;const g=L[2],done=t.status==2;let q=0,c=0,late=0;
  if(done){const n=+t.edits||0,dd=t.doneDate||(t.doneAt?ymd(t.doneAt):"");q=n>=5?0:n==4?.25:n>=2?.5:n==1?.75:1;
@@ -465,11 +469,11 @@ async function exWeek(){
 
 function rPrev(){const t=tasks.find(x=>x.id===resId);if(!t)return;const k=kpiOf({...t,status:2,edits:+$("re").value||0,doneDate:$("rd").value});
  $("rk").innerHTML=k?`Điểm giao <b>${k.g}</b> · Số lượng <b>${f2(k.a)}</b> · Chất lượng <b>${f2(k.b)}</b> · Tiến độ <b>${f2(k.c)}</b>${k.late>0?` (chậm ${k.late} ngày)`:""}`:"Việc này chưa chọn cấp giao nhiệm vụ nên chưa tính điểm KPI (bấm Sửa để chọn)."}
-function kdRender(){const k=kd();ldSet("sd","sdx",k.leader);$("sl").innerHTML=lvOptions();$("sl").value=k.level;
+function kdRender(){const k=kd();$("sp").value=(k.prods||[]).join("\n");ldSet("sd","sdx",k.leader);$("sl").innerHTML=lvOptions();$("sl").value=k.level;
  $("sf").innerHTML=(k.fav||[]).filter(c=>LVM[c]).map(c=>`<span class="tag">${c} <b style="cursor:pointer" onclick="favDel('${c}')">×</b></span>`).join(" ")||"<small>Chưa có</small>";
  $("sa").innerHTML='<option value="">＋ Thêm cấp hay dùng…</option>'+LV.map(x=>`<option value="${x[0]}">${esc(lvLabel(x[0]))}</option>`).join("")}
 async function kdSave(p){const m=$("kmsg");try{await db.collection("users").doc(me.uid).update({kpi:{...kd(),...p}});m.className="ok";m.textContent="Đã lưu."}catch(e){m.className="";m.textContent="Chưa lưu được: "+e.message}}
-const favDel=c=>kdSave({fav:kd().fav.filter(x=>x!==c)}), favAdd=c=>{if(c&&!kd().fav.includes(c))kdSave({fav:[...kd().fav,c]})}, saveKd=()=>kdSave({leader:ldGet("sd","sdx"),level:$("sl").value});
+const favDel=c=>kdSave({fav:kd().fav.filter(x=>x!==c)}), favAdd=c=>{if(c&&!kd().fav.includes(c))kdSave({fav:[...kd().fav,c]})}, saveKd=()=>kdSave({leader:ldGet("sd","sdx"),level:$("sl").value,prods:$("sp").value.split("\n").map(x=>x.trim()).filter(Boolean)});
 
 function kpiInit(){if(!$("km").value){const d=new Date(),m=d.getDate()>=15?new Date(d.getFullYear(),d.getMonth()+1,1):d;$("km").value=m.getFullYear()+"-"+String(m.getMonth()+1).padStart(2,"0")}kpiSum()}
 function kpiRange(){const[y,m]=($("km").value||"").split("-").map(Number);if(!y)return null;const f=d=>d.toLocaleDateString("sv-SE");return{y,m,s:f(new Date(y,m-2,15)),e:f(new Date(y,m-1,14))}}
