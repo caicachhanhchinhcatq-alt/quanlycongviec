@@ -124,8 +124,9 @@ body:has(#login:not(.hide)) header{display:none}
    <button onclick="exWeek()">⬇ Xuất báo cáo tuần (Excel)</button>
    <p style="font-size:12px;color:var(--mu);margin:8px 0 0">Số liệu có đến đâu xuất đến đó (chưa đến thứ Tư vẫn xuất được).</p></div>
   <div class="card"><h3>Mẫu A2 - Chấm điểm KPI</h3>
-   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Kỳ đánh giá: từ ngày 15 tháng trước đến ngày 14 của tháng được chọn. Tính theo hạn hoàn thành của nhiệm vụ trong kỳ; việc chưa chọn cấp giao nhiệm vụ không được tính. Tên đơn vị lấy ở ô phía trên.</p>
-   <label class="lb" style="margin-top:0">Tháng đánh giá</label><input id="km" type="month" onchange="kpiSum()">
+   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Kỳ đánh giá: từ ngày 15 tháng trước đến ngày 14 của tháng được chọn. Tính theo hạn hoàn thành của nhiệm vụ trong kỳ; việc chưa chọn cấp giao nhiệm vụ không được tính. Tên đơn vị lấy ở ô phía trên. Chọn một người để xuất KPI cá nhân; với đội trưởng và đội phó, việc do mình giao cho người khác cũng được tính.</p>
+   <label class="lb" style="margin-top:0">Xuất cho</label><select id="kp" onchange="kpiSum()"></select>
+   <label class="lb">Tháng đánh giá</label><input id="km" type="month" onchange="kpiSum()">
    <div id="ks" style="font-size:14px;margin:8px 0"></div>
    <button onclick="exA2()">⬇ Xuất Mẫu A2 (Excel)</button></div>
  </section>
@@ -478,15 +479,16 @@ const favDel=c=>kdSave({fav:kd().fav.filter(x=>x!==c)}), favAdd=c=>{if(c&&!kd().
 
 function kpiInit(){if(!$("km").value){const d=new Date(),m=d.getDate()>=15?new Date(d.getFullYear(),d.getMonth()+1,1):d;$("km").value=m.getFullYear()+"-"+String(m.getMonth()+1).padStart(2,"0")}kpiSum()}
 function kpiRange(){const[y,m]=($("km").value||"").split("-").map(Number);if(!y)return null;const f=d=>d.toLocaleDateString("sv-SE");return{y,m,s:f(new Date(y,m-2,15)),e:f(new Date(y,m-1,14))}}
-const kpiRows=r=>tasks.filter(t=>t.due&&t.due>=r.s&&t.due<=r.e).sort((a,b)=>a.due.localeCompare(b.due)||(a.createdAt||0)-(b.createdAt||0));
+const kpiOwn=(t,u)=>{const x=users.find(v=>v.id===u);return t.assignee===u||!!(x&&x.role!=="canbo"&&t.createdBy===u)};
+const kpiRows=(r,u)=>tasks.filter(t=>t.due&&t.due>=r.s&&t.due<=r.e&&(!u||kpiOwn(t,u))).sort((a,b)=>a.due.localeCompare(b.due)||(a.createdAt||0)-(b.createdAt||0));
 function kpiTot(l){const T={G:0,a:0,b:0,c:0};l.forEach(t=>{const k=kpiOf(t);T.G+=k.g;T.a+=k.a;T.b+=k.b;T.c+=k.c});T.A=T.G?T.a/T.G:0;T.B=T.G?T.b/T.G:0;T.C=T.G?T.c/T.G:0;T.K=(T.A+T.B+T.C)/3*55;return T}
 function kpiSum(){const r=kpiRange(),o=$("ks");if(!r){o.textContent="";return}
- const all=kpiRows(r),ok=all.filter(t=>LVM[t.level]),T=kpiTot(ok),miss=all.length-ok.length;
- o.innerHTML=`Kỳ <b>${vn(r.s)} → ${vn(r.e)}</b>: ${all.length} nhiệm vụ có hạn trong kỳ, ${ok.length} việc đã chọn cấp giao nhiệm vụ, ${ok.filter(t=>t.status==2).length} hoàn thành.`+(miss?` <span class="cao">${miss} việc chưa chọn cấp nên chưa tính.</span>`:"")+(ok.length?`<br>Tổng điểm giao <b>${f2(T.G)}</b> · A=<b>${f2(T.A)}</b> · B=<b>${f2(T.B)}</b> · C=<b>${f2(T.C)}</b> · K tập thể = <b>${f2(T.K)}</b>/55`:"")}
+ const u=$("kp").value,all=kpiRows(r,u),ok=all.filter(t=>LVM[t.level]),T=kpiTot(ok),miss=all.length-ok.length;
+ o.innerHTML=`Kỳ <b>${vn(r.s)} → ${vn(r.e)}</b>: ${all.length} nhiệm vụ có hạn trong kỳ, ${ok.length} việc đã chọn cấp giao nhiệm vụ, ${ok.filter(t=>t.status==2).length} hoàn thành.`+(miss?` <span class="cao">${miss} việc chưa chọn cấp nên chưa tính.</span>`:"")+(ok.length?`<br>Tổng điểm giao <b>${f2(T.G)}</b> · A=<b>${f2(T.A)}</b> · B=<b>${f2(T.B)}</b> · C=<b>${f2(T.C)}</b> · ${u?"K cá nhân":"K tập thể"} = <b>${f2(T.K)}</b>/55`+(u&&ok.some(t=>t.assignee!==u)?` <small>(gồm ${ok.filter(t=>t.assignee!==u).length} việc do người này giao cho người khác)</small>`:""):"")}
 async function exA2(){
  if(typeof ExcelJS==="undefined")return alert("Chưa tải được thư viện Excel. Kiểm tra kết nối mạng.");
  const r=kpiRange();if(!r)return alert("Chọn tháng đánh giá.");
- const l=kpiRows(r).filter(t=>LVM[t.level]);if(!l.length)return alert("Chưa có nhiệm vụ nào trong kỳ này đã chọn cấp giao nhiệm vụ.");
+ const uid=$("kp").value,l=kpiRows(r,uid).filter(t=>LVM[t.level]);if(!l.length)return alert("Chưa có nhiệm vụ nào trong kỳ này đã chọn cấp giao nhiệm vụ.");
  const T=kpiTot(l),n=l.length,unit=($("w2").value.trim()||"ĐỘI ...").toUpperCase(),F={name:"Times New Roman",size:12},
   wb=new ExcelJS.Workbook(),ws=wb.addWorksheet("Mẫu A2"),dz=s=>s?new Date(s+"T00:00:00Z"):"",DF="dd/mm/yyyy";
  ws.columns=[5,38,24,12,28,30,10,28,13,10,11,12,10,13,10].map(width=>({width}));
@@ -494,6 +496,7 @@ async function exA2(){
  m("A1:D1","CÔNG AN TỈNH TUYÊN QUANG",{bold:true});m("E1:O1","CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",{bold:true});
  m("A2:D2","PHÒNG THAM MƯU",{bold:true});m("E2:O2","Độc lập - Tự do - Hạnh phúc",{bold:true});
  m("A3:D3",unit,{bold:true});m("E3:O3",`Tuyên Quang, ngày ${+r.e.slice(8)} tháng ${r.m} năm ${r.y}`,{italic:true});
+ if(uid)m("A4:O4","Cán bộ: "+name(uid),{bold:true},{horizontal:"left"});
  m("A5:O5","Mẫu A2",{bold:true},{horizontal:"left"});m("A6:O6","Chấm điểm nhiệm vụ được giao theo chức năng, nhiệm vụ",{bold:true,size:13});
  m("A7:O7",`Kỳ đánh giá: tháng ${r.m}/${r.y} (thống kê từ ngày 15 tháng trước đến ngày 14 của tháng đánh giá)`,{italic:true});
  [["A8:A10","STT"],["B8:B10","Nhiệm vụ"],["C8:G8","Điểm nhiệm vụ được giao"],["H8:O8","Thực tế triển khai và điểm tự chấm"],["C9:C10","Sản phẩm"],["D9:D10","Hạn hoàn thành"],["E9:E10","Lãnh đạo trực tiếp chỉ đạo nhiệm vụ"],["F9:F10","Cấp trình/giao nhiệm vụ/cấp ký"],["G9:G10","Điểm nhiệm vụ được giao"],["H9:H10","Sản phẩm"],["I9:J9","Điểm số lượng (A)"],["K9:M9","Điểm chất lượng (B)"],["N9:O9","Điểm tiến độ (C)"]].forEach(([a,v])=>m(a,v,{bold:true}));
@@ -501,7 +504,7 @@ async function exA2(){
  ws.getRow(10).height=62;
  const lines=(x,w)=>String(x||"").split("\n").reduce((a,q)=>a+Math.max(1,Math.ceil(q.length/w)),0);
  l.forEach((t,i)=>{const k=kpiOf(t),d=t.status==2,dd=t.doneDate||(t.doneAt?ymd(t.doneAt):"");
-  const row=ws.addRow([i+1,t.title,t.prod||"",dz(t.due),t.leader||kd().leader,lvLabel(t.level),k.g,d?(t.result||""):"",d?"Hoàn thành":"Chưa hoàn thành",k.a,k.g?k.b/k.g:0,d?(+t.edits||0):"",k.b,d?dz(dd):"",k.c]);
+  const row=ws.addRow([i+1,t.title+(uid&&t.assignee!==uid?" (giao cho "+name(t.assignee)+")":""),t.prod||"",dz(t.due),t.leader||kd().leader,lvLabel(t.level),k.g,d?(t.result||""):"",d?"Hoàn thành":"Chưa hoàn thành",k.a,k.g?k.b/k.g:0,d?(+t.edits||0):"",k.b,d?dz(dd):"",k.c]);
   row.height=Math.max(34,17*Math.max(lines(t.title,40),lines(t.prod,24),lines(lvLabel(t.level),32),lines(t.leader||kd().leader,30))+8);
   row.getCell(4).numFmt=DF;row.getCell(14).numFmt=DF;row.getCell(11).numFmt="0%";[7,10,13,15].forEach(c=>row.getCell(c).numFmt="0.00")});
  const th={style:"thin"},bd={top:th,left:th,bottom:th,right:th},L=10+n;
@@ -511,13 +514,13 @@ async function exA2(){
  [["G",T.G],["J",T.a],["M",T.b],["O",T.c]].forEach(([c,v])=>put(`${c}${t1}`,{formula:`SUM(${c}11:${c}${L})`,result:v},"0.00"));
  ws.mergeCells(`A${t2}:G${t2}`);put(`A${t2}`,"Bước 2: Tính điểm hệ số KPI (A, B, C)",null,{});ws.getCell(`A${t2}`).alignment={vertical:"middle"};
  put(`H${t2}`,"A =");put(`J${t2}`,{formula:`IFERROR(J${t1}/G${t1},0)`,result:T.A},"0.0000");put(`K${t2}`,"B =");put(`M${t2}`,{formula:`IFERROR(M${t1}/G${t1},0)`,result:T.B},"0.0000");put(`N${t2}`,"C =");put(`O${t2}`,{formula:`IFERROR(O${t1}/G${t1},0)`,result:T.C},"0.0000");
- ws.mergeCells(`A${kr}:J${kr}`);put(`A${kr}`,"K tập thể = (A + B + C) ÷ 3 × 55",null,{});ws.getCell(`A${kr}`).alignment={vertical:"middle"};
+ ws.mergeCells(`A${kr}:J${kr}`);put(`A${kr}`,(uid?"K cá nhân = (A + B + C) ÷ 3 × 55 (chưa tính hệ số D)":"K tập thể = (A + B + C) ÷ 3 × 55"),null,{});ws.getCell(`A${kr}`).alignment={vertical:"middle"};
  put(`K${kr}`,{formula:`(J${t2}+M${t2}+O${t2})/3*55`,result:T.K},"0.00",{color:{argb:"FFC00000"}});
  ws.mergeCells(`A${kr+2}:O${kr+2}`);const nt=ws.getCell(`A${kr+2}`);nt.value="Ghi chú: Đây là kết quả TỰ CHẤM. Mức xếp loại chính thức do Ban Thường vụ Đảng ủy Công an tỉnh xem xét, quyết định.";nt.font={...F,italic:true};nt.alignment={wrapText:true,vertical:"middle"};
  m(`B${kr+4}:D${kr+4}`,"NGƯỜI LẬP BIỂU",{bold:true});m(`K${kr+4}:O${kr+4}`,"THỦ TRƯỞNG ĐƠN VỊ",{bold:true});
  ws.pageSetup={paperSize:9,orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0};
  const buf=await wb.xlsx.writeBuffer(),a=document.createElement("a");
- a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download=`mau-A2-thang-${String(r.m).padStart(2,"0")}-${r.y}.xlsx`;a.click();
+ a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download=`mau-A2-${uid?"ca-nhan-"+name(uid).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/gi,"d").trim().replace(/\s+/g,"-").toLowerCase()+"-":""}thang-${String(r.m).padStart(2,"0")}-${r.y}.xlsx`;a.click();
 }
 const sel=new Set(), selT=(id,v)=>{v?sel.add(id):sel.delete(id);selUi()};
 function selAll(v){const ps=+$("ps").value;rows.slice((pg-1)*ps,pg*ps).forEach(t=>v?sel.add(t.id):sel.delete(t.id));renderStats()}
@@ -526,7 +529,7 @@ async function delSel(){if(!sel.size||!confirm("Xóa vĩnh viễn "+sel.size+" c
  try{const b=db.batch();[...sel].forEach(id=>b.delete(db.collection("tasks").doc(id)));await b.commit();sel.clear();selUi()}catch(e){alert("Không xóa được: "+e.message)}}
 function fillUsers(){
  const o=users.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join(""),k=$("fp").value;
- $("fp").innerHTML='<option value="">Cả đội</option>'+o;$("fp").value=k;
+ $("fp").innerHTML='<option value="">Cả đội</option>'+o;$("fp").value=k;const k2=$("kp").value;$("kp").innerHTML='<option value="">Cả đội (KPI tập thể)</option>'+o;$("kp").value=k2;
  $("avs").innerHTML=AV.map((x,i)=>`<span class="av ${me.avatar===x?"on":""}" onclick="setAv(${i})">${x}</span>`).join("");
 }
 document.addEventListener("click",e=>{const m=$("mn");if(m&&!e.target.closest("#who"))m.classList.add("hide")});
