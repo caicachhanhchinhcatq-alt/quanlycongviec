@@ -551,6 +551,7 @@ async function exA2(){
  ws.mergeCells(`A${kr}:J${kr}`);put(`A${kr}`,(isLeadU(uid)?"K cá nhân người đứng đầu = (A + B + C + D) ÷ 4 × 55 (chưa có D thì ÷ 3)":uid?"K cá nhân = (A + B + C) ÷ 3 × 55":"K tập thể = (A + B + C) ÷ 3 × 55"),null,{});ws.getCell(`A${kr}`).alignment={vertical:"middle"};
  if(isLeadU(uid)){ws.mergeCells(`A${kr-1}:J${kr-1}`);put(`A${kr-1}`,"Hệ số D - đánh giá, xếp loại tập thể, cá nhân thuộc thẩm quyền quản lý (Hướng dẫn 20-HD/ĐUCA) = số người hoàn thành nhiệm vụ trở lên ÷ tổng số người thuộc quyền quản lý",null,{});ws.getCell(`A${kr-1}`).alignment={vertical:"middle",wrapText:true};put(`K${kr-1}`,Dv==null?"":Dv,"0.00",{color:{argb:"FF0000FF"}})}
  put(`K${kr}`,{formula:isLeadU(uid)?`IF(K${kr-1}="",(J${t2}+M${t2}+O${t2})/3*55,(J${t2}+M${t2}+O${t2}+K${kr-1})/4*55)`:`(J${t2}+M${t2}+O${t2})/3*55`,result:T.K},"0.00",{color:{argb:"FFC00000"}});
+ const bAll=(r,c2)=>{for(let c=1;c<=c2;c++)ws.getCell(r,c).border=bd};bAll(t1,15);bAll(t2,15);bAll(kr,11);if(isLeadU(uid))bAll(kr-1,11);
  ws.mergeCells(`A${kr+2}:O${kr+2}`);const nt=ws.getCell(`A${kr+2}`);nt.value="Ghi chú: Đây là kết quả TỰ CHẤM. Mức xếp loại chính thức do Ban Thường vụ Đảng ủy Công an tỉnh xem xét, quyết định.";nt.font={...F,italic:true};nt.alignment={wrapText:true,vertical:"middle"};ws.getRow(kr+2).height=36;
  m(`B${kr+4}:D${kr+4}`,"NGƯỜI LẬP BIỂU",{bold:true});m(`K${kr+4}:O${kr+4}`,"THỦ TRƯỞNG ĐƠN VỊ",{bold:true});
  ws.pageSetup={paperSize:9,orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0};
