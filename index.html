@@ -169,11 +169,11 @@ input[type=date],input[type=month]{cursor:pointer}
    <label class="lb">Cấp giao nhiệm vụ mặc định</label><select id="sl"></select>
    <label class="lb">Cấp hay dùng (hiện đầu danh sách chọn)</label><div id="sf" class="chips"></div><select id="sa" onchange="favAdd(this.value);this.value=''"></select>
    <label class="lb">Sản phẩm hay dùng (mỗi dòng một mục, hiện thành nút khi thêm việc)</label><textarea id="sp" rows="5"></textarea>
-   <button onclick="saveKd()"<button onclick="saveKd()" style="margin-top:8px">Lưu mặc định</button> <span id="kmsg"></span></div>
+   <button onclick="saveKd()" style="margin-top:8px">Lưu mặc định</button> <span id="kmsg"></span></div>
   <div id="gm" class="card hide"><h3>AI Gemini (gợi ý việc từ ảnh công văn)</h3>
-   <input id="gk" type="password" placeholder="API key Gemini"><input id="gn" placeholder="Tên model (để trống = gemini-3.5-flash)">
+   <input id="gk" type="password" placeholder="API key Gemini"><label class="lb">Phiên bản AI</label><select id="gs" onchange="gmChg()"></select><input id="gn" class="hide" placeholder="Nhập tên model, VD: gemini-3.5-flash-lite">
    <button onclick="saveGem()">Lưu</button> <span id="gmsg"></span>
-   <p style="font-size:12px;color:var(--mu);margin:8px 0 0">Key dùng chung cho cả đội. Nên giới hạn key theo tên miền trang web trong Google Cloud. Không dùng cho văn bản mật: ảnh được gửi tới Google để xử lý.</p></div>
+   <p style="font-size:12px;color:var(--mu);margin:8px 0 0">Key dùng chung cho cả đội. Nên giới hạn key theo tên miền trang web trong Google Cloud. Không dùng cho văn bản mật: ảnh được gửi tới Google để xử lý. Mỗi model có hạn mức lượt/ngày riêng (xem tại AI Studio, mục Giới hạn lưu lượng). Khi model đang chọn hết lượt, app tự chuyển sang model kế tiếp trong danh sách.</p></div>
   <div id="lead" class="card hide"><h3>Tạo tài khoản thành viên</h3>
    <div class="row"><input id="nu" placeholder="Tên đăng nhập"><input id="nn" placeholder="Họ tên"><input id="np" placeholder="Mật khẩu ban đầu">
    <select id="nr"><option value="canbo">Cán bộ</option><option value="doipho">Đội phó</option><option value="doitruong">Đội trưởng</option></select></div>
@@ -189,6 +189,7 @@ input[type=date],input[type=month]{cursor:pointer}
  <input id="cam" type="file" accept="image/*" multiple class="hide" onchange="addPics(this.files);this.value=''">
  <div id="pv" class="pv"></div>
  <button id="go" class="hide" onclick="scanDoc()">🤖 AI đọc <span id="gn0">0</span> ảnh và gợi ý việc</button>
+ <div id="gh1" class="hint hide"></div>
  <div id="sg" class="hide card" style="padding:10px;margin-top:8px"></div>
  <div class="lh"><label class="lb">Tên nhiệm vụ</label></div>
  <textarea id="t" class="big" rows="2" placeholder="VD: Xây dựng báo cáo kết quả quý III"></textarea>
@@ -215,6 +216,7 @@ input[type=date],input[type=month]{cursor:pointer}
  <input id="rcam" type="file" accept="image/*" multiple class="hide" onchange="addRPics(this.files);this.value=''">
  <div id="rpv" class="pv"></div>
  <button id="rgo" class="hide" onclick="scanRes()">🤖 AI đọc <span id="rn0">0</span> ảnh và ghi kết quả</button>
+ <div id="gh2" class="hint hide"></div>
  <div id="rsg" class="hint" style="font-size:13px"></div>
  <label class="lb">Kết quả</label>
  <textarea id="rr" class="big" rows="4" placeholder="VD: Đã gửi Báo cáo số .../BC-... ngày ... về Sở Tư pháp"></textarea>
@@ -333,20 +335,47 @@ const shrink=f=>new Promise((ok,no)=>{const im=new Image(),u=URL.createObjectURL
  im.onerror=()=>no(new Error("Không mở được ảnh"));im.src=u});
 function renderPics(){
  $("pv").innerHTML=pics.map((b,i)=>`<div><img src="data:image/jpeg;base64,${b}"><b onclick="rmPic(${i})">×</b></div>`).join("")+(pics.length&&pics.length<10?'<button type="button" class="ad" onclick="$(\'cam\').click()" aria-label="Thêm ảnh">+</button>':"");
- $("go").classList.toggle("hide",!pics.length);$("gn0").textContent=pics.length}
+ $("go").classList.toggle("hide",!pics.length);$("gh1").classList.toggle("hide",!pics.length);$("gn0").textContent=pics.length}
 const rmPic=i=>{pics.splice(i,1);renderPics()};
 async function addPics(fs){
  for(const f of [...fs]){ if(pics.length>=10){alert("Tối đa 10 ảnh một lần.");break}
   try{pics.push(await shrink(f));renderPics()}catch(e){alert(e.message)} } }
+const GM=[["gemini-3.5-flash-lite","3.5 Flash-Lite · tiết kiệm nhất dòng mới"],["gemini-3.1-flash-lite","3.1 Flash-Lite · giá thấp nhất"],["gemini-3.6-flash","3.6 Flash · mạnh hơn, giá cao hơn"],["gemini-3.8-flash","3.8 Flash · mới nhất dòng Flash, giá như 3.6"]],DEFM=GM[0][0];
+const gmName=m=>{const x=GM.find(v=>v[0]===m);return x?x[1].split(" · ")[0]:m};
+const gmFill=()=>{$("gs").innerHTML=GM.map(([v,t])=>`<option value="${v}">${t}</option>`).join("")+'<option value="__x">Khác (nhập tay)…</option>'};
+const gmSet=m=>{m=m||DEFM;const k=GM.some(v=>v[0]===m);$("gs").value=k?m:"__x";$("gn").value=k?"":m;$("gn").classList.toggle("hide",k)};
+const gmChg=()=>$("gn").classList.toggle("hide",$("gs").value!=="__x");
+const gmGet=()=>($("gs").value==="__x"?$("gn").value.trim():$("gs").value)||DEFM;
+const gmHint=()=>["gh1","gh2"].forEach(i=>$(i).textContent="Model AI: "+gmName(gem.model||DEFM));
+function gemErr(st,msg,m){
+ const w=/retry in (?:(\d+)h)?(?:(\d+)m)?(?:([\d.]+)s)?/i.exec(msg)||[],
+  t=w[1]?`${w[1]} giờ ${w[2]||0} phút`:w[2]?`${w[2]} phút`:w[3]?`${Math.ceil(w[3])} giây`:"ít phút";
+ if(st===429)return /per ?day/i.test(msg)?`Đã hết lượt dùng AI trong ngày của model ${gmName(m)}. Thử lại sau khoảng ${t}, hoặc báo đội trưởng/đội phó đổi sang model khác, hoặc nhập tay.`:`AI đang bị giới hạn tốc độ, thử lại sau khoảng ${t}.`;
+ if(st===500||st===503)return "Máy chủ AI đang quá tải. Thử lại sau ít phút hoặc nhập tay.";
+ if(st===404)return `Model ${m} không tồn tại hoặc đã ngừng. Báo đội trưởng/đội phó chọn model khác ở Cài đặt.`;
+ if(/api key|permission|denied/i.test(msg))return "API key Gemini không hợp lệ hoặc không có quyền. Báo đội trưởng/đội phó kiểm tra ở Cài đặt.";
+ return "AI báo lỗi: "+msg.slice(0,150) }
+async function gemOne(m,imgs,prompt,max,lvl){
+ const url=`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`;
+ const go=async l=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),45000);
+  try{return await fetch(url,{method:"POST",signal:c.signal,headers:{"Content-Type":"application/json","x-goog-api-key":gem.key},
+   body:JSON.stringify({contents:[{parts:[...imgs.map(b=>({inline_data:{mime_type:"image/jpeg",data:b}})),{text:prompt}]}],
+    generationConfig:{responseMimeType:"application/json",maxOutputTokens:max,...(l?{thinkingConfig:{thinkingLevel:l}}:{})}})})}finally{clearTimeout(t)}};
+ let r,j;
+ try{ r=await go(lvl); j=await r.json();
+  if(!r.ok&&/think/i.test((j.error&&j.error.message)||"")){r=await go("");j=await r.json()}
+ }catch(e){throw new Error(e.name==="AbortError"?"AI trả lời quá lâu (hơn 45 giây). Kiểm tra mạng rồi thử lại.":"Không kết nối được máy chủ AI. Kiểm tra mạng rồi thử lại.")}
+ if(!r.ok){const msg=(j.error&&j.error.message)||"",e=new Error(gemErr(r.status,msg,m));e.st=r.status;e.day=r.status===429&&/per ?day/i.test(msg);throw e}
+ try{return JSON.parse(j.candidates[0].content.parts.map(x=>x.text||"").join("").replace(/```json|```/g,"").trim())}
+ catch(e){throw new Error("AI trả kết quả không đọc được. Thử lại hoặc nhập tay.")} }
 async function gemJson(imgs,prompt,max,lvl){
- const url=`https://generativelanguage.googleapis.com/v1beta/models/${gem.model||"gemini-3.5-flash"}:generateContent`;
- const go=l=>fetch(url,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":gem.key},
-  body:JSON.stringify({contents:[{parts:[...imgs.map(b=>({inline_data:{mime_type:"image/jpeg",data:b}})),{text:prompt}]}],
-   generationConfig:{responseMimeType:"application/json",maxOutputTokens:max,...(l?{thinkingConfig:{thinkingLevel:l}}:{})}})});
- let r=await go(lvl),j=await r.json();
- if(!r.ok&&/think/i.test((j.error&&j.error.message)||"")){r=await go("");j=await r.json()}
- if(!r.ok)throw new Error((j.error&&j.error.message)||r.status);
- return JSON.parse(j.candidates[0].content.parts.map(x=>x.text||"").join("").replace(/```json|```/g,"").trim()) }
+ const sel=gem.model||DEFM,k=GM.findIndex(v=>v[0]===sel),ids=GM.map(v=>v[0]),
+  chain=k<0?[sel,...ids]:[sel,...ids.slice(k+1),...ids.slice(0,k)],er=[];
+ for(const m of chain){
+  try{const o=await gemOne(m,imgs,prompt,max,lvl);
+   ["gh1","gh2"].forEach(i=>$(i).textContent="Model AI: "+gmName(m)+(m===sel?"":` (tự chuyển vì ${gmName(sel)} không dùng được)`));return o}
+  catch(e){if(![404,429,500,503].includes(e.st))throw e;er.push(e)} }
+ throw er.every(e=>e.day)?new Error(`Đã hết lượt AI trong ngày ở cả ${chain.length} model. Hạn mức đặt lại lúc 0 giờ giờ Thái Bình Dương (khoảng 14-15 giờ chiều ở Việt Nam). Nhập tay hoặc thử lại sau.`):er[0] }
 async function scanDoc(){
  const g=$("sg"); g.classList.remove("hide");
  if(!gem.key){g.textContent="Chưa có API key Gemini. Nhờ đội trưởng hoặc đội phó nhập ở tab Cài đặt.";return}
@@ -365,7 +394,7 @@ Chỉ trả về JSON là một mảng các đối tượng {"title","desc","due
  try{
   sug=await gemJson(pics,prompt,4096,"low"); if(!Array.isArray(sug))sug=[];
   g.innerHTML=sug.length?sug.map((x,i)=>`<label class="sgi"><input type="checkbox" checked data-i="${i}" style="width:auto"><div><b style="font-size:15px">${esc(x.title)}</b><br><small>Hạn: <b>${vn(x.due)||"không nêu"}</b></small><br><small>${esc(x.desc)}</small>${x.prod?`<br><small>Sản phẩm: <b>${esc(x.prod)}</b></small>`:""}<br><small>Cấp giao: <b>${LVM[x.level]?lvLabel(x.level)+" ("+LVM[x.level][2]+"đ)":"mặc định "+kd().level}</b></small></div></label>`).join("")+'<button style="margin-top:8px" onclick="addSug()">＋ Thêm các việc đã chọn (giao cho tôi)</button>':"AI không tìm thấy nhiệm vụ rõ ràng trong ảnh.";
- }catch(e){g.textContent="Không đọc được: "+e.message} }
+ }catch(e){g.textContent="⚠️ "+e.message} }
 async function addSug(){
  const ids=[...document.querySelectorAll("#sg input:checked")].map(x=>+x.dataset.i);
  try{ for(const i of ids){const x=sug[i];await db.collection("tasks").add({title:String(x.title||"").slice(0,200),desc:String(x.desc||""),assignee:me.uid,
@@ -373,8 +402,8 @@ async function addSug(){
  }catch(e){alert("Không thêm được: "+e.message)} }
 async function saveGem(){ const m=$("gmsg");
  const k=$("gk").value.trim()||gem.key||"";if(!k){m.textContent="Nhập API key.";return}
- try{await db.collection("config").doc("gemini").set({key:k,model:$("gn").value.trim()||"gemini-3.5-flash"});
-  gem={key:k,model:$("gn").value.trim()||"gemini-3.5-flash"};$("gk").value="";m.className="ok";m.textContent="Đã lưu."}catch(e){m.className="";m.textContent="Không lưu được: "+e.message} }
+ try{const md=gmGet();await db.collection("config").doc("gemini").set({key:k,model:md});
+  gem={key:k,model:md};$("gk").value="";gmHint();m.className="ok";m.textContent="Đã lưu."}catch(e){m.className="";m.textContent="Không lưu được: "+e.message} }
 let resId=null, rpics=[];
 const setStatus=(id,s)=>{ if(+s===2){openResult(id);return} db.collection("tasks").doc(id).update({status:+s}).catch(e=>alert("Không lưu được: "+e.message)) };
 function openResult(id){ resId=id; const t=tasks.find(x=>x.id===id); $("rt").textContent=t.title; $("rr").value=t.result||""; rpics=[];renderRPics();$("rsg").textContent="";$("re").value=t.edits||0;$("rd").value=t.doneDate||(t.doneAt?ymd(t.doneAt):today());rPrev();rdlg.showModal() }
@@ -386,7 +415,7 @@ async function saveRes(){
  try{await db.collection("tasks").doc(resId).update(f);rdlg.close()}catch(e){alert("Không lưu được: "+e.message)} }
 function renderRPics(){
  $("rpv").innerHTML=rpics.map((b,i)=>`<div><img src="data:image/jpeg;base64,${b}"><b onclick="rmRPic(${i})">×</b></div>`).join("")+(rpics.length&&rpics.length<10?'<button type="button" class="ad" onclick="$(\'rcam\').click()" aria-label="Thêm ảnh">+</button>':"");
- $("rgo").classList.toggle("hide",!rpics.length);$("rn0").textContent=rpics.length}
+ $("rgo").classList.toggle("hide",!rpics.length);$("gh2").classList.toggle("hide",!rpics.length);$("rn0").textContent=rpics.length}
 const rmRPic=i=>{rpics.splice(i,1);renderRPics()};
 async function addRPics(fs){
  for(const f of [...fs]){ if(rpics.length>=10){alert("Tối đa 10 ảnh một lần.");break}
@@ -399,7 +428,7 @@ async function scanRes(){
  try{
   const o=await gemJson(rpics,prompt,1024,"minimal");
    $("rr").value=String(o.result||"").trim(); g.textContent=$("rr").value?"Đã điền kết quả. Kiểm tra lại rồi bấm Lưu.":"AI không đọc được kết quả, hãy nhập tay."
- }catch(e){g.textContent="Không đọc được: "+e.message} }
+ }catch(e){g.textContent="⚠️ "+e.message} }
 rdlg.addEventListener("close",()=>{if(me)render()});
 const delTask=id=>{if(!confirm("Xóa công việc này?"))return;wait(1,"Đang xóa...");return db.collection("tasks").doc(id).delete().finally(()=>wait(0))};
 
@@ -604,6 +633,7 @@ function wait(on,msg){ if(on){ if(!bz++) bt=setTimeout(()=>{$("bmsg").textConten
 $("busy").addEventListener("cancel",e=>e.preventDefault());
 const W=(fn,msg)=>async function(...a){wait(1,msg);try{return await fn.apply(this,a)}finally{wait(0)}};
 ["saveTask","addSug","scanDoc","scanRes","saveRes","saveGem","saveUnit","delSel","kdSave","addUser","chPass","exWeek","exA1","exA2"].forEach(n=>{window[n]=W(window[n])});
+gmFill();gmSet();gmHint();
 auth.onAuthStateChanged(async u=>{
  unsub.forEach(f=>f());unsub=[];
  if(!u){$("login").classList.remove("hide");$("app").classList.add("hide");$("who").textContent="";return}
@@ -612,7 +642,7 @@ auth.onAuthStateChanged(async u=>{
  if(!d.exists){await auth.signOut();return}
  me={uid:u.uid,...d.data()}; }finally{wait(0)}
  $("login").classList.add("hide");$("app").classList.remove("hide");$("lead").classList.toggle("hide",!isLead());$("gm").classList.toggle("hide",!isLead());
- db.collection("config").doc("gemini").get().then(x=>{gem=x.exists?x.data():{};$("gn").value=gem.model||"";$("gk").placeholder=gem.key?"Đã lưu (nhập key mới để thay)":"API key Gemini"}).catch(()=>{});
+ db.collection("config").doc("gemini").get().then(x=>{gem=x.exists?x.data():{};gmSet(gem.model);gmHint();$("gk").placeholder=gem.key?"Đã lưu (nhập key mới để thay)":"API key Gemini"}).catch(()=>{});
  ["w2","w6"].forEach(k=>$(k).value=ls(k)||"");wkSel();unitHdr();
  db.collection("config").doc("unit").get().then(x=>{if(x.exists){const u=x.data();$("w2").value=u.name||"";$("w6").value=u.short||"";ls("w2",$("w2").value);ls("w6",$("w6").value);unitHdr()}}).catch(()=>{});
  const hdr=()=>{$("who").innerHTML=`<span class="av">${me.avatar||"👤"}</span><span>${esc(me.name)} · ${R[me.role]} ▾</span><div id="mn" class="menu hide"><button onclick="tab(2);$('mn').classList.add('hide')">⚙️ Cài đặt</button><button onclick="auth.signOut()">🚪 Đăng xuất</button></div>`;$("who").onclick=e=>{if(!e.target.closest("#mn"))$("mn").classList.toggle("hide")}};hdr();
