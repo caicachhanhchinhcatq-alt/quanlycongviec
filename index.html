@@ -50,7 +50,7 @@ body[data-t=light] .stat b{text-shadow:none}
 body[data-t=light] .f.late .v{color:#b91c1c}body[data-t=light] .f.soon .v{color:#92400e}body[data-t=light] .f.ok .v{color:#15803d}
 input,select,textarea{font-size:16px}input::placeholder,textarea::placeholder{color:var(--mu);opacity:.85}
 .lh{display:flex;justify-content:space-between;align-items:flex-end;margin-top:12px}.lh .lb{margin:0}
-.mic{padding:3px 10px;font-size:13px;margin:0;min-width:0}.hint{font-size:11px;color:var(--mu);margin:2px 0 0}
+.hint{font-size:11px;color:var(--mu);margin:2px 0 0}
 .big{font-size:17px;line-height:1.45;padding:11px 12px;resize:vertical}
 input[type=date]{display:block;width:100%;min-width:0;max-width:100%;height:46px;-webkit-appearance:none;appearance:none;text-align:left}
 input[type=date]::-webkit-date-and-time-value{text-align:left}.pv{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.pv div{position:relative}
@@ -81,6 +81,7 @@ dialog{border:1px solid var(--ac);border-radius:14px;background:var(--bg);color:
 body:has(#login:not(.hide)) header{display:none}
 .xw{position:sticky;top:0;height:0;text-align:right;z-index:3}.xb{width:38px;height:38px;padding:0;margin:-6px -6px 0 0;border-radius:50%;background:var(--bg);font-size:18px;line-height:1}dialog h3{padding-right:42px}
 input[type=date],input[type=month]{cursor:pointer}
+.cr{margin:18px auto 0;padding:12px 8px 0;border-top:1px solid var(--bd);display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;font-size:12px;line-height:1.5;color:var(--mu);max-width:560px}.cr b{color:var(--ac);font-size:13px;letter-spacing:.2px}.cr a{color:var(--ac);text-decoration:none;font-weight:600}
 </style><script>document.addEventListener("gesturestart",e=>e.preventDefault())</script></head><body data-t="teal">
 <header><div class="ttl"><b>CÔNG VIỆC & KPI</b><small id="hu">ĐỘI CÔNG TÁC</small></div><span id="who"></span></header>
 <main>
@@ -180,6 +181,7 @@ input[type=date],input[type=month]{cursor:pointer}
    <select id="nr"><option value="canbo">Cán bộ</option><option value="doipho">Đội phó</option><option value="doitruong">Đội trưởng</option></select></div>
    <button onclick="addUser()">Tạo tài khoản</button> <span id="um"></span></div>
    </section>
+ <div class="cr"><b>Phần mềm Quản lý công việc &amp; KPI</b><span>Tác giả: Đội Pháp chế và Quản lý khoa học - Công an tỉnh Tuyên Quang</span><span>Hỗ trợ: Nguyễn Việt Khánh - SĐT <a href="tel:0328833388">0328.833.388</a> (Zalo)</span></div>
 </div>
 </main>
 
@@ -189,12 +191,11 @@ input[type=date],input[type=month]{cursor:pointer}
  <div id="pv" class="pv"></div>
  <button id="go" class="hide" onclick="scanDoc()">🤖 AI đọc <span id="gn0">0</span> ảnh và gợi ý việc</button>
  <div id="sg" class="hide card" style="padding:10px;margin-top:8px"></div>
- <div class="lh"><label class="lb">Tên nhiệm vụ</label><button class="g mic" onclick="dictate('t',this)">🎤 Nói</button></div>
+ <div class="lh"><label class="lb">Tên nhiệm vụ</label></div>
  <textarea id="t" class="big" rows="2" placeholder="VD: Xây dựng báo cáo kết quả quý III"></textarea>
- <div class="hint">Bấm “Nói” rồi đọc; nói kèm “ngày mai”, “20/11” sẽ tự điền hạn.</div>
- <div class="lh"><label class="lb">Nội dung / căn cứ</label><button class="g mic" onclick="dictate('d',this)">🎤 Nói</button></div>
+ <div class="lh"><label class="lb">Nội dung / căn cứ</label></div>
  <textarea id="d" class="big" rows="4" placeholder="VD: Theo Công văn số ... ngày ..."></textarea>
- <div class="lh"><label class="lb">Sản phẩm</label><button class="g mic" onclick="dictate('pd',this)">🎤 Nói</button></div>
+ <div class="lh"><label class="lb">Sản phẩm</label></div>
  <input id="pd" placeholder="Chọn bên dưới hoặc nhập, VD: Báo cáo của Đội gửi Phòng PV01">
  <div id="pdc" class="chips"></div>
  <label class="lb">Hạn hoàn thành: <b id="dl" style="color:var(--tx);font-size:14px;text-transform:none"></b></label>
@@ -245,7 +246,7 @@ if(location.protocol==="file:"){
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.firestore();
 const R={doitruong:"Đội trưởng",doipho:"Đội phó",canbo:"Cán bộ"}, ST=["Chưa làm","Đang làm","Hoàn thành"], AV=["👮","🦅","🛡️","⭐","🚀","🐯","🦁","🐉"];
-let gem={}, pics=[], sug=[], rec=null, me=null, users=[], tasks=[], unsub=[], editId=null, rows=[], pg=1, lastSig="";
+let gem={}, pics=[], sug=[], me=null, users=[], tasks=[], unsub=[], editId=null, rows=[], pg=1, lastSig="";
 const $=id=>document.getElementById(id), email=u=>u.trim().toLowerCase()+"@doi.local";
 const isLead=()=>me&&me.role!=="canbo";
 const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -326,23 +327,9 @@ async function saveTask(){
   else await db.collection("tasks").add({...f,status:0,createdBy:me.uid,createdAt:Date.now()}); dlg.close();
  }catch(e){alert("Không lưu được: "+e.message)} }
 
-function parseDate(s){ s=s.toLowerCase();
- if(/hôm nay/.test(s))return dayStr(0); if(/ngày mai/.test(s))return dayStr(1); if(/ngày kia/.test(s))return dayStr(2);
- const m=s.match(/(\d{1,2})\s*(?:\/|tháng)\s*(\d{1,2})/); if(!m)return "";
- const y=new Date().getFullYear(); let d=new Date(y,m[2]-1,m[1]); if(d.getMonth()!=m[2]-1)return "";
- if(d<new Date(new Date().toDateString()))d=new Date(y+1,m[2]-1,m[1]); return d.toLocaleDateString("sv-SE"); }
-function dictate(id,btn){
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR)return alert("Trình duyệt này chưa hỗ trợ nhập bằng giọng nói. Hãy dùng Chrome hoặc Edge.");
- if(rec){rec.stop();return}
- rec=new SR();rec.lang="vi-VN";rec.interimResults=false;btn.textContent="⏹ Dừng";
- rec.onresult=e=>{const x=e.results[0][0].transcript.trim(),el=$(id);el.value=(el.value?el.value+" ":"")+x;
-  if(!$("due").value){const d=parseDate(x);if(d){$("due").value=d;dueLbl()}}};
- rec.onend=()=>{rec=null;btn.textContent="🎤 Nói"}; rec.onerror=()=>{}; rec.start(); }
-
 const shrink=f=>new Promise((ok,no)=>{const im=new Image(),u=URL.createObjectURL(f);
- im.onload=()=>{const k=Math.min(1,1500/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;
-  c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",.8).split(",")[1])};
+ im.onload=()=>{const k=Math.min(1,1280/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;
+  c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",.7).split(",")[1])};
  im.onerror=()=>no(new Error("Không mở được ảnh"));im.src=u});
 function renderPics(){
  $("pv").innerHTML=pics.map((b,i)=>`<div><img src="data:image/jpeg;base64,${b}"><b onclick="rmPic(${i})">×</b></div>`).join("");
@@ -351,6 +338,15 @@ const rmPic=i=>{pics.splice(i,1);renderPics()};
 async function addPics(fs){
  for(const f of [...fs]){ if(pics.length>=10){alert("Tối đa 10 ảnh một lần.");break}
   try{pics.push(await shrink(f));renderPics()}catch(e){alert(e.message)} } }
+async function gemJson(imgs,prompt,max,lvl){
+ const url=`https://generativelanguage.googleapis.com/v1beta/models/${gem.model||"gemini-3.5-flash"}:generateContent`;
+ const go=l=>fetch(url,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":gem.key},
+  body:JSON.stringify({contents:[{parts:[...imgs.map(b=>({inline_data:{mime_type:"image/jpeg",data:b}})),{text:prompt}]}],
+   generationConfig:{responseMimeType:"application/json",maxOutputTokens:max,...(l?{thinkingConfig:{thinkingLevel:l}}:{})}})});
+ let r=await go(lvl),j=await r.json();
+ if(!r.ok&&/think/i.test((j.error&&j.error.message)||"")){r=await go("");j=await r.json()}
+ if(!r.ok)throw new Error((j.error&&j.error.message)||r.status);
+ return JSON.parse(j.candidates[0].content.parts.map(x=>x.text||"").join("").replace(/```json|```/g,"").trim()) }
 async function scanDoc(){
  const g=$("sg"); g.classList.remove("hide");
  if(!gem.key){g.textContent="Chưa có API key Gemini. Nhờ đội trưởng hoặc đội phó nhập ở tab Cài đặt.";return}
@@ -367,11 +363,7 @@ Quy tắc "prod" (sản phẩm đầu ra cụ thể đơn vị phải hoàn thà
 Quy tắc "level" (mã cấp giao nhiệm vụ, căn cứ cơ quan ban hành văn bản): "2.2" nếu của Đảng ủy Công an Trung ương hoặc lãnh đạo Bộ Công an; "2.3" nếu của Tỉnh ủy, Hội đồng nhân dân, Ủy ban nhân dân tỉnh hoặc cấp ủy, chính quyền cấp tỉnh; "2.4" nếu của Công an tỉnh hoặc các Cục; "2.5" nếu của một phòng hoặc cấp ủy, chính quyền cấp xã; "2.6" nếu của Công an cấp xã hoặc cấp đội; chuỗi rỗng nếu không xác định được.
 Chỉ trả về JSON là một mảng các đối tượng {"title","desc","due","prod","level"}.`;
  try{
-  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gem.model||"gemini-3.5-flash"}:generateContent`,{method:"POST",
-   headers:{"Content-Type":"application/json","x-goog-api-key":gem.key},
-   body:JSON.stringify({contents:[{parts:[...pics.map(b=>({inline_data:{mime_type:"image/jpeg",data:b}})),{text:prompt}]}],generationConfig:{responseMimeType:"application/json"}})});
-  const j=await r.json(); if(!r.ok)throw new Error((j.error&&j.error.message)||r.status);
-  sug=JSON.parse(j.candidates[0].content.parts.map(x=>x.text||"").join("").replace(/```json|```/g,"").trim()); if(!Array.isArray(sug))sug=[];
+  sug=await gemJson(pics,prompt,4096,"low"); if(!Array.isArray(sug))sug=[];
   g.innerHTML=sug.length?sug.map((x,i)=>`<label class="sgi"><input type="checkbox" checked data-i="${i}" style="width:auto"><div><b style="font-size:15px">${esc(x.title)}</b><br><small>Hạn: <b>${vn(x.due)||"không nêu"}</b></small><br><small>${esc(x.desc)}</small>${x.prod?`<br><small>Sản phẩm: <b>${esc(x.prod)}</b></small>`:""}<br><small>Cấp giao: <b>${LVM[x.level]?lvLabel(x.level)+" ("+LVM[x.level][2]+"đ)":"mặc định "+kd().level}</b></small></div></label>`).join("")+'<button style="margin-top:8px" onclick="addSug()">＋ Thêm các việc đã chọn (giao cho tôi)</button>':"AI không tìm thấy nhiệm vụ rõ ràng trong ảnh.";
  }catch(e){g.textContent="Không đọc được: "+e.message} }
 async function addSug(){
@@ -405,12 +397,8 @@ async function scanRes(){
  g.textContent="⏳ AI đang đọc "+rpics.length+" ảnh...";
  const prompt=`Các ảnh là các trang của văn bản hoặc báo cáo mà đơn vị đã hoàn thành cho nhiệm vụ: "${t.title}". Hãy ghi KẾT QUẢ thực hiện bằng 1 đến 2 câu ngắn gọn (tối đa 300 ký tự), theo mẫu: "Đã [gửi/ban hành/trình/hoàn thành] [loại văn bản] số [số, ký hiệu] ngày [ngày ban hành] [gửi + nơi nhận, hoặc về + trích yếu]". Chỉ dùng thông tin nhìn thấy rõ trong ảnh, thông tin nào không thấy thì bỏ qua, không bịa. Trả về JSON dạng {"result": "..."}.`;
  try{
-  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gem.model||"gemini-3.5-flash"}:generateContent`,{method:"POST",
-   headers:{"Content-Type":"application/json","x-goog-api-key":gem.key},
-   body:JSON.stringify({contents:[{parts:[...rpics.map(b=>({inline_data:{mime_type:"image/jpeg",data:b}})),{text:prompt}]}],generationConfig:{responseMimeType:"application/json"}})});
-  const j=await r.json(); if(!r.ok)throw new Error((j.error&&j.error.message)||r.status);
-  const o=JSON.parse(j.candidates[0].content.parts.map(x=>x.text||"").join("").replace(/```json|```/g,"").trim());
-  $("rr").value=String(o.result||"").trim(); g.textContent=$("rr").value?"Đã điền kết quả. Kiểm tra lại rồi bấm Lưu.":"AI không đọc được kết quả, hãy nhập tay."
+  const o=await gemJson(rpics,prompt,1024,"minimal");
+   $("rr").value=String(o.result||"").trim(); g.textContent=$("rr").value?"Đã điền kết quả. Kiểm tra lại rồi bấm Lưu.":"AI không đọc được kết quả, hãy nhập tay."
  }catch(e){g.textContent="Không đọc được: "+e.message} }
 rdlg.addEventListener("close",()=>{if(me)render()});
 const delTask=id=>confirm("Xóa công việc này?")&&db.collection("tasks").doc(id).delete();
