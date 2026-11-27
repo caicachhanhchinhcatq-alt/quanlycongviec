@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Quản lý công việc đội công tác</title>
+<title>Công việc & KPI - Đội công tác</title>
 <link rel="manifest" href="manifest.json"><meta name="theme-color" content="#021a18">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Quản lý việc"><link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Việc & KPI"><link rel="apple-touch-icon" href="icon-192.png">
 <style>
 *{box-sizing:border-box}
 body[data-t=teal]{--bg:#021a18;--bg2:#06504a;--card:rgba(5,45,41,.78);--bd:rgba(46,230,200,.3);--ac:#2ee6c8;--acx:#021a18;--tx:#e6fffa;--mu:#a7e0d5;--inb:rgba(0,18,16,.65)}
@@ -17,7 +17,8 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.7;bac
  linear-gradient(var(--ac),var(--ac)) 0 30%/10vw 2px no-repeat,linear-gradient(var(--ac),var(--ac)) 100% 62%/12vw 2px no-repeat}
 body[data-t=light]::before,body[data-t=light]::after{opacity:.08}
 header{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:var(--card);backdrop-filter:blur(8px);border-bottom:1px solid var(--bd)}
-header b{font-size:17px;letter-spacing:.3px;text-shadow:0 0 12px var(--ac)}
+.ttl{display:flex;flex-direction:column;line-height:1.15;min-width:0}.ttl small{font-size:11px;letter-spacing:3px;color:var(--mu);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header b{font-size:18px;letter-spacing:.3px;text-shadow:0 0 12px var(--ac)}
 body[data-t=light] header b{text-shadow:none}
 #who{font-size:13px;color:var(--mu);display:flex;align-items:center;gap:8px;position:relative;cursor:pointer}
 .menu{position:absolute;right:0;top:calc(100% + 8px);z-index:20;min-width:170px;background:var(--bg);border:1px solid var(--ac);border-radius:10px;padding:6px;box-shadow:0 6px 20px #0008}.menu button{display:block;width:100%;text-align:left;background:none;color:var(--tx);padding:10px;margin:0;border:0;font-weight:500}.menu button:hover{background:var(--inb)}
@@ -35,6 +36,7 @@ button.s{padding:5px 11px;font-size:13px}button.d{background:#dc2626;color:#fff;
 .stat b{display:block;font-size:28px;color:var(--ac);text-shadow:0 0 12px var(--ac)}.stat span{font-size:12px;color:var(--mu)}
 body[data-t=light] .stat b{text-shadow:none}
 .task{border-left:6px solid var(--ac)}.task.late{border-left-color:#f87171}.task.done{opacity:.88;border-left-color:#4ade80}
+.no{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 6px;margin-right:9px;border-radius:8px;border:1px solid var(--ac);background:var(--inb);color:var(--ac);font-size:13px;font-weight:800;vertical-align:2px;text-shadow:none}
 .task .t{font-size:18px;font-weight:700;line-height:1.35}
 .task .ds{margin:8px 0 0;padding:8px 10px;border-radius:8px;background:var(--inb);color:var(--mu);font-size:14px;line-height:1.5;white-space:pre-wrap}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px}
@@ -79,11 +81,11 @@ body:has(#login:not(.hide)) header{display:none}
 .xw{position:sticky;top:0;height:0;text-align:right;z-index:3}.xb{width:38px;height:38px;padding:0;margin:-6px -6px 0 0;border-radius:50%;background:var(--bg);font-size:18px;line-height:1}dialog h3{padding-right:42px}
 input[type=date],input[type=month]{cursor:pointer}
 </style></head><body data-t="teal">
-<header><b>QUẢN LÝ CÔNG VIỆC ĐỘI CÔNG TÁC</b><span id="who"></span></header>
+<header><div class="ttl"><b>CÔNG VIỆC & KPI</b><small id="hu">ĐỘI CÔNG TÁC</small></div><span id="who"></span></header>
 <main>
 <div id="login" class="hide"><div class="card lg">
  <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" style="color:var(--ac)"><path d="M50 8 L84 21 V48 C84 69 70 84 50 92 C30 84 16 69 16 48 V21 Z" stroke-width="4" stroke-linejoin="round"/><path d="M34 50 L46 62 L68 38" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
- <h1>QUẢN LÝ CÔNG VIỆC</h1><p class="sub">ĐỘI CÔNG TÁC</p>
+ <h1>CÔNG VIỆC & KPI</h1><p class="sub">ĐỘI CÔNG TÁC</p>
  <p class="hello">Đăng nhập để tiếp tục</p>
  <input id="lu" placeholder="Tên đăng nhập" autocomplete="username" autocapitalize="none" autocorrect="off"><input id="lp" type="password" placeholder="Mật khẩu" autocomplete="current-password">
  <button onclick="login()">Đăng nhập</button>
@@ -91,7 +93,7 @@ input[type=date],input[type=month]{cursor:pointer}
  <small>Tài khoản do đội trưởng hoặc đội phó cấp.</small>
 </div></div>
 <div id="app" class="hide">
- <nav><button id="n0" class="on" onclick="tab(0)"><span>🏠</span>Chính<i id="bdg" class="bdg hide"></i></button><button id="n1" onclick="tab(1)"><span>📊</span>Thống kê</button><button id="n3" onclick="tab(3)"><span>📄</span>Xuất báo cáo</button><button id="n2" onclick="tab(2)"><span>⚙️</span>Cài đặt</button></nav>
+ <nav><button id="n0" class="on" onclick="tab(0)"><span>🏠</span>Chính<i id="bdg" class="bdg hide"></i></button><button id="n1" onclick="tab(1)"><span>📊</span>Thống kê</button><button id="n3" onclick="tab(3)"><span>📄</span>Báo cáo</button><button id="n4" onclick="tab(4)"><span>🎯</span>KPI</button><button id="n2" onclick="tab(2)"><span>⚙️</span>Cài đặt</button></nav>
 
 <section id="p0">
   <div id="warn"></div>
@@ -116,17 +118,19 @@ input[type=date],input[type=month]{cursor:pointer}
  </section>
 
  <section id="p3" class="hide">
-  <div class="card"><h3>Xuất báo cáo</h3>
-   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Tên đơn vị và tên ngắn dùng cho tiêu đề và dòng tự đánh giá của báo cáo tuần.</p>
-   <div class="row"><input id="w2" placeholder="Tên đơn vị (VD: ĐỘI ...)"><input id="w6" placeholder="Tên ngắn (VD: Đội 6)"></div>
-   <label class="lb" style="margin-top:16px">Báo cáo tuần (cả đội, chốt từ thứ Năm đến thứ Tư)</label>
+  <div class="card"><h3>Báo cáo tuần</h3>
+   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Tên đơn vị lấy ở Cài đặt → Đơn vị công tác.</p>
+   <label class="lb" style="margin-top:0">Báo cáo tuần (cả đội, chốt từ thứ Năm đến thứ Tư)</label>
    <select id="wk" onchange="wkSel()"><option value="0">Tuần hiện tại</option><option value="1">Tuần sắp tới</option><option value="c">Tùy chọn từ ngày – đến ngày</option></select>
    <div id="wl" style="font-size:13px;color:var(--mu);margin:4px 0 8px"></div>
    <div id="wc" class="row hide"><label>Từ ngày <input id="wf" type="date"></label><label>đến ngày <input id="wt" type="date"></label></div>
    <button onclick="exWeek()">⬇ Xuất báo cáo tuần (Excel)</button>
    <p style="font-size:12px;color:var(--mu);margin:8px 0 0">Số liệu có đến đâu xuất đến đó (chưa đến thứ Tư vẫn xuất được).</p></div>
+ </section>
+
+ <section id="p4" class="hide">
   <div class="card"><h3>Mẫu A2 - Chấm điểm KPI</h3>
-   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Kỳ đánh giá: từ ngày 15 tháng trước đến ngày 14 của tháng được chọn. Tính theo hạn hoàn thành của nhiệm vụ trong kỳ; việc chưa chọn cấp giao nhiệm vụ không được tính. Tên đơn vị lấy ở ô phía trên. Chọn một người để xuất KPI cá nhân; với đội trưởng và đội phó, việc do mình giao cho người khác cũng được tính.</p>
+   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Kỳ đánh giá: từ ngày 15 tháng trước đến ngày 14 của tháng được chọn. Tính theo hạn hoàn thành của nhiệm vụ trong kỳ; việc chưa chọn cấp giao nhiệm vụ không được tính. Tên đơn vị lấy ở Cài đặt. Chọn một người để xuất KPI cá nhân; với đội trưởng và đội phó, việc do mình giao cho người khác cũng được tính.</p>
    <label class="lb" style="margin-top:0">Xuất cho</label><select id="kp" onchange="kdClr()"></select>
    <div id="dw" class="hide"><label class="lb">Hệ số D - kết quả lãnh đạo, chỉ đạo = số người hoàn thành nhiệm vụ trở lên ÷ tổng số người thuộc quyền quản lý (mặc định 1)</label>
    <input id="kdD" type="number" step="0.01" min="0" max="1" inputmode="decimal" oninput="kpiSum()">
@@ -154,6 +158,11 @@ input[type=date],input[type=month]{cursor:pointer}
   <div class="card"><h3>Đổi mật khẩu</h3>
    <input id="po" type="password" placeholder="Mật khẩu hiện tại"><input id="pn" type="password" placeholder="Mật khẩu mới (từ 6 ký tự)">
    <button onclick="chPass()">Đổi mật khẩu</button> <span id="pm"></span></div>
+  <div class="card"><h3>Đơn vị công tác</h3>
+   <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Hiện trên tiêu đề báo cáo tuần, Mẫu A1 và Mẫu A2. Do đội trưởng hoặc đội phó nhập, dùng chung cho cả đội.</p>
+   <label class="lb" style="margin-top:0">Tên đơn vị (VD: Đội Công tác số 6)</label><input id="w2" placeholder="Tên đơn vị">
+   <label class="lb">Tên ngắn (VD: Đội 6)</label><input id="w6" placeholder="Tên ngắn">
+   <div id="us" class="hide"><button onclick="saveUnit()" style="margin-top:8px">Lưu đơn vị</button> <span id="umsg"></span></div></div>
   <div class="card"><h3>Mặc định chấm điểm KPI (Mẫu A2)</h3>
    <p style="font-size:13px;color:var(--mu);margin:0 0 8px">Giá trị tự điền khi thêm việc mới; vẫn sửa được từng việc.</p>
    <label class="lb" style="margin-top:0">Lãnh đạo chỉ đạo / ký thường gặp</label><select id="sd" onchange="ldChg('sd','sdx')"></select><input id="sdx" class="hide" placeholder="Nhập cấp bậc, họ tên - chức vụ">
@@ -277,7 +286,7 @@ async function installApp(){const m=$("im");
  m.innerHTML=/iPhone|iPad|iPod/.test(u)?"Trên iPhone/iPad: bấm nút <b>Chia sẻ</b> (hình vuông có mũi tên lên) ở thanh trình duyệt, kéo xuống chọn <b>Thêm vào MH chính</b>, rồi bấm <b>Thêm</b>.":/Android/.test(u)?"Trên Android: bấm menu <b>⋮</b> của Chrome, chọn <b>Thêm vào màn hình chính</b> (hoặc <b>Cài đặt ứng dụng</b>).":"Trên máy tính: bấm biểu tượng cài đặt ở cuối thanh địa chỉ của Chrome/Edge, hoặc mở trang này trên điện thoại để thêm vào màn hình chính."}
 function theme(t){document.body.dataset.t=t;ls("theme",t)}
 theme(ls("theme")||"teal");
-function tab(i){[0,1,2,3].forEach(k=>{$("p"+k).classList.toggle("hide",k!==i);$("n"+k).classList.toggle("on",k===i)});if(i===1)renderStats();if(i===3){wkSel();kpiInit()}}
+function tab(i){[0,1,2,3,4].forEach(k=>{$("p"+k).classList.toggle("hide",k!==i);$("n"+k).classList.toggle("on",k===i)});if(i===1)renderStats();if(i===3)wkSel();if(i===4)kpiInit()}
 
 function login(){ $("err").textContent="";
  auth.signInWithEmailAndPassword(email($("lu").value),$("lp").value).catch(()=>$("err").textContent="Sai tên đăng nhập hoặc mật khẩu."); }
@@ -419,8 +428,8 @@ function render(){
  $("bdg").textContent=lt.length+sn.length;$("bdg").classList.toggle("hide",!(lt.length+sn.length));
  $("hd").textContent="Nhiệm vụ chi tiết ("+mine.length+" việc)";
  $("s1").textContent=mine.filter(t=>t.status<2).length;$("s2").textContent=mine.filter(t=>t.status==2).length;$("s3").textContent=mine.filter(isLate).length;
- const card=t=>{const can=isLead()||t.createdBy===me.uid,[dc,dt]=dueInfo(t);
-  return `<div class="card task ${isLate(t)?"late":""} ${t.status==2?"done":""}"><div class="t">${esc(t.title)} ${t.priority?'<span class="cao">● Ưu tiên cao</span>':""}</div>
+ const card=(t,ix)=>{const can=isLead()||t.createdBy===me.uid,[dc,dt]=dueInfo(t);
+  return `<div class="card task ${isLate(t)?"late":""} ${t.status==2?"done":""}"><div class="t"><span class="no">${ix+1}</span>${esc(t.title)} ${t.priority?'<span class="cao">● Ưu tiên cao</span>':""}</div>
   ${t.desc?`<div class="ds">${esc(t.desc)}</div>`:""}
   <div class="grid"><div class="f ${dc}"><label>Hạn hoàn thành</label><div class="v">${dt}</div></div>
   <div class="f"><label>Người thực hiện</label><div class="v">${esc(name(t.assignee))}</div></div>
@@ -431,7 +440,7 @@ function render(){
  const gv=isLead()?tasks.filter(t=>t.createdBy===me.uid&&t.assignee!==me.uid).sort((a,b)=>(a.status==2)-(b.status==2)||(a.due||"9").localeCompare(b.due||"9")):[];
  $("given").innerHTML=gv.length?`<h3 style="margin:18px 0 8px">Việc tôi đã giao cho người khác (${gv.length} việc)</h3>`+gv.map(card).join(""):"";
  if(!$("p1").classList.contains("hide")||!$("p3").classList.contains("hide"))renderStats();
- if(!$("p3").classList.contains("hide"))kpiSum();
+ if(!$("p4").classList.contains("hide"))kpiSum();
 }
 function renderStats(){
  [...sel].forEach(id=>{if(!tasks.some(t=>t.id===id))sel.delete(id)});
@@ -461,7 +470,8 @@ async function exWeek(){
  const done=tasks.filter(t=>t.status==2).map(t=>({t,d:t.doneAt?ymd(t.doneAt):(t.due||"")})).filter(x=>x.d>=f&&x.d<=to).sort((a,b)=>a.d.localeCompare(b.d));
  const plan=tasks.filter(t=>t.status<2).sort((a,b)=>(a.due||"9").localeCompare(b.due||"9"));
  const bad=done.filter(x=>x.t.due&&x.d>x.t.due).length+plan.filter(isLate).length;
- const unit=$("w2").value.trim(),sh=$("w6").value.trim()||unit||"Đơn vị"; ls("w6",$("w6").value);
+ const unit=needUnit();if(!unit)return;
+ const sh=$("w6").value.trim()||unit||"Đơn vị"; ls("w6",$("w6").value);
  const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet("Báo cáo tuần"),F={name:"Times New Roman",size:13};
  ws.columns=[{width:6},{width:46},{width:14},{width:50},{width:15},{width:14},{width:14}];
  const put=(r,text,font,al)=>{ws.mergeCells(r,1,r,7);const c=ws.getCell(r,1);c.value=text;c.font=font;c.alignment=al};
@@ -512,7 +522,8 @@ async function exA2(){
  const r=kpiRange();if(!r)return alert("Chọn tháng đánh giá.");
  const uid=$("kp").value,l=kpiRows(r,uid).filter(t=>LVM[t.level]);if(!l.length)return alert("Chưa có nhiệm vụ nào trong kỳ này đã chọn cấp giao nhiệm vụ.");
  if(isLeadU(uid)&&$("kdD").value.trim()!==""&&kpiD()==null)return alert("Hệ số D phải từ 0 đến 1.");
- const Dv=isLeadU(uid)?kpiD():null,T=kpiTot(l,Dv),n=l.length,unit=($("w2").value.trim()||"ĐỘI ...").toUpperCase(),F={name:"Times New Roman",size:12},
+ const unitN=needUnit();if(!unitN)return;
+ const Dv=isLeadU(uid)?kpiD():null,T=kpiTot(l,Dv),n=l.length,unit=unitN.toUpperCase(),F={name:"Times New Roman",size:12},
   wb=new ExcelJS.Workbook(),ws=wb.addWorksheet("Mẫu A2"),dz=s=>s?new Date(s+"T00:00:00Z"):"",DF="dd/mm/yyyy";
  ws.columns=[5,38,24,12,28,30,10,28,13,10,11,12,10,13,10].map(width=>({width}));
  const m=(a,v,font,al)=>{ws.mergeCells(a);const c=ws.getCell(a.split(":")[0]);c.value=v;c.font={...F,...font};c.alignment={vertical:"middle",wrapText:true,horizontal:"center",...al}};
@@ -524,23 +535,23 @@ async function exA2(){
  m("A7:O7",`Kỳ đánh giá: tháng ${r.m}/${r.y} (thống kê từ ngày 15 tháng trước đến ngày 14 của tháng đánh giá)`,{italic:true});
  [["A8:A10","STT"],["B8:B10","Nhiệm vụ"],["C8:G8","Điểm nhiệm vụ được giao"],["H8:O8","Thực tế triển khai và điểm tự chấm"],["C9:C10","Sản phẩm"],["D9:D10","Hạn hoàn thành"],["E9:E10","Lãnh đạo trực tiếp chỉ đạo nhiệm vụ"],["F9:F10","Cấp trình/giao nhiệm vụ/cấp ký"],["G9:G10","Điểm nhiệm vụ được giao"],["H9:H10","Sản phẩm"],["I9:J9","Điểm số lượng (A)"],["K9:M9","Điểm chất lượng (B)"],["N9:O9","Điểm tiến độ (C)"]].forEach(([a,v])=>m(a,v,{bold:true}));
  [["I10","Hoàn thành/ Chưa hoàn thành"],["J10","Điểm số lượng"],["K10","Tỷ lệ hoàn thành (%)"],["L10","Số lần phải hoàn thiện, chỉnh sửa"],["M10","Điểm chất lượng"],["N10","Ngày hoàn thành thực tế"],["O10","Điểm tiến độ"]].forEach(([a,v])=>{const c=ws.getCell(a);c.value=v;c.font={...F,bold:true};c.alignment={vertical:"middle",wrapText:true,horizontal:"center"}});
- ws.getRow(10).height=62;
- const lines=(x,w)=>String(x||"").split("\n").reduce((a,q)=>a+Math.max(1,Math.ceil(q.length/w)),0);
+ ws.getRow(10).height=92;ws.getRow(8).height=24;ws.getRow(9).height=24;
  l.forEach((t,i)=>{const k=kpiOf(t),d=t.status==2,dd=t.doneDate||(t.doneAt?ymd(t.doneAt):"");
-  const row=ws.addRow([i+1,t.title+(uid&&t.assignee!==uid?" (giao cho "+name(t.assignee)+")":""),t.prod||"",dz(t.due),t.leader||kd().leader,lvLabel(t.level),k.g,d?(t.result||""):"",d?"Hoàn thành":"Chưa hoàn thành",k.a,k.g?k.b/k.g:0,d?(+t.edits||0):"",k.b,d?dz(dd):"",k.c]);
-  row.height=Math.max(34,17*Math.max(lines(t.title,40),lines(t.prod,24),lines(lvLabel(t.level),32),lines(t.leader||kd().leader,30))+8);
+  const ttl=t.title+(uid&&t.assignee!==uid?" (giao cho "+name(t.assignee)+")":""),ldr=t.leader||kd().leader;
+  const row=ws.addRow([i+1,ttl,t.prod||"",dz(t.due),ldr,lvLabel(t.level),k.g,d?(t.result||""):"",d?"Hoàn thành":"Chưa hoàn thành",k.a,k.g?k.b/k.g:0,d?(+t.edits||0):"",k.b,d?dz(dd):"",k.c]);
+  row.height=xH([[ttl,38],[t.prod,24],[ldr,28],[lvLabel(t.level),30],[d?t.result:"",28],[d?"Hoàn thành":"Chưa hoàn thành",13]]);
   row.getCell(4).numFmt=DF;row.getCell(14).numFmt=DF;row.getCell(11).numFmt="0%";[7,10,13,15].forEach(c=>row.getCell(c).numFmt="0.00")});
  const th={style:"thin"},bd={top:th,left:th,bottom:th,right:th},L=10+n;
  for(let rr=8;rr<=L;rr++)for(let c=1;c<=15;c++){const x=ws.getCell(rr,c);x.border=bd;if(rr>10){x.font=F;x.alignment={vertical:"middle",wrapText:true,horizontal:[2,3,5,6,8].includes(c)?"left":"center"}}}
  const t1=L+1,t2=L+2,kr=L+4,put=(a,v,fmt,font)=>{const c=ws.getCell(a);c.value=v;c.font={...F,bold:true,...font};c.alignment={vertical:"middle",horizontal:"center",wrapText:true};if(fmt)c.numFmt=fmt;c.border=bd};
- ws.mergeCells(`A${t1}:F${t1}`);put(`A${t1}`,"Bước 1: Tính điểm tổng tại các cột “Điểm nhiệm vụ được giao”, “Điểm số lượng”, “Điểm chất lượng”, “Điểm tiến độ”",null,{});ws.getCell(`A${t1}`).alignment={wrapText:true,vertical:"middle"};
+ ws.mergeCells(`A${t1}:F${t1}`);put(`A${t1}`,"Bước 1: Tính điểm tổng tại các cột “Điểm nhiệm vụ được giao”, “Điểm số lượng”, “Điểm chất lượng”, “Điểm tiến độ”",null,{});ws.getCell(`A${t1}`).alignment={wrapText:true,vertical:"middle"};ws.getRow(t1).height=44;
  [["G",T.G],["J",T.a],["M",T.b],["O",T.c]].forEach(([c,v])=>put(`${c}${t1}`,{formula:`SUM(${c}11:${c}${L})`,result:v},"0.00"));
  ws.mergeCells(`A${t2}:G${t2}`);put(`A${t2}`,"Bước 2: Tính điểm hệ số KPI (A, B, C)",null,{});ws.getCell(`A${t2}`).alignment={vertical:"middle"};
  put(`H${t2}`,"A =");put(`J${t2}`,{formula:`IFERROR(J${t1}/G${t1},0)`,result:T.A},"0.0000");put(`K${t2}`,"B =");put(`M${t2}`,{formula:`IFERROR(M${t1}/G${t1},0)`,result:T.B},"0.0000");put(`N${t2}`,"C =");put(`O${t2}`,{formula:`IFERROR(O${t1}/G${t1},0)`,result:T.C},"0.0000");
  ws.mergeCells(`A${kr}:J${kr}`);put(`A${kr}`,(isLeadU(uid)?"K cá nhân người đứng đầu = (A + B + C + D) ÷ 4 × 55 (chưa có D thì ÷ 3)":uid?"K cá nhân = (A + B + C) ÷ 3 × 55":"K tập thể = (A + B + C) ÷ 3 × 55"),null,{});ws.getCell(`A${kr}`).alignment={vertical:"middle"};
  if(isLeadU(uid)){ws.mergeCells(`A${kr-1}:J${kr-1}`);put(`A${kr-1}`,"Hệ số D - đánh giá, xếp loại tập thể, cá nhân thuộc thẩm quyền quản lý (Hướng dẫn 20-HD/ĐUCA) = số người hoàn thành nhiệm vụ trở lên ÷ tổng số người thuộc quyền quản lý",null,{});ws.getCell(`A${kr-1}`).alignment={vertical:"middle",wrapText:true};put(`K${kr-1}`,Dv==null?"":Dv,"0.00",{color:{argb:"FF0000FF"}})}
  put(`K${kr}`,{formula:isLeadU(uid)?`IF(K${kr-1}="",(J${t2}+M${t2}+O${t2})/3*55,(J${t2}+M${t2}+O${t2}+K${kr-1})/4*55)`:`(J${t2}+M${t2}+O${t2})/3*55`,result:T.K},"0.00",{color:{argb:"FFC00000"}});
- ws.mergeCells(`A${kr+2}:O${kr+2}`);const nt=ws.getCell(`A${kr+2}`);nt.value="Ghi chú: Đây là kết quả TỰ CHẤM. Mức xếp loại chính thức do Ban Thường vụ Đảng ủy Công an tỉnh xem xét, quyết định.";nt.font={...F,italic:true};nt.alignment={wrapText:true,vertical:"middle"};
+ ws.mergeCells(`A${kr+2}:O${kr+2}`);const nt=ws.getCell(`A${kr+2}`);nt.value="Ghi chú: Đây là kết quả TỰ CHẤM. Mức xếp loại chính thức do Ban Thường vụ Đảng ủy Công an tỉnh xem xét, quyết định.";nt.font={...F,italic:true};nt.alignment={wrapText:true,vertical:"middle"};ws.getRow(kr+2).height=36;
  m(`B${kr+4}:D${kr+4}`,"NGƯỜI LẬP BIỂU",{bold:true});m(`K${kr+4}:O${kr+4}`,"THỦ TRƯỞNG ĐƠN VỊ",{bold:true});
  ws.pageSetup={paperSize:9,orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0};
  const buf=await wb.xlsx.writeBuffer(),a=document.createElement("a");
@@ -556,9 +567,9 @@ async function exA1(){
  if(typeof ExcelJS==="undefined")return alert("Chưa tải được thư viện Excel. Kiểm tra kết nối mạng.");
  const r=kpiRange("k1");if(!r)return alert("Chọn tháng của khung nhiệm vụ.");
  const l=a1rows(r);if(!l.length)return alert("Không có nhiệm vụ chưa hoàn thành nào có hạn trong kỳ này.");
- const unit=$("w2").value.trim()||"Đội …",F={name:"Times New Roman",size:13},wb=new ExcelJS.Workbook(),ws=wb.addWorksheet("Mẫu A1"),dz=s=>new Date(s+"T00:00:00Z"),d=new Date(),
-  sec2=l.filter(t=>(t.level||"").startsWith("3.")),sec1=l.filter(t=>!sec2.includes(t)),th={style:"thin"},bd={top:th,left:th,bottom:th,right:th},
-  lines=(x,w)=>String(x||"").split("\n").reduce((n,q)=>n+Math.max(1,Math.ceil(q.length/w)),0);
+ const unitN=needUnit();if(!unitN)return;
+ const unit=unitN,F={name:"Times New Roman",size:13},wb=new ExcelJS.Workbook(),ws=wb.addWorksheet("Mẫu A1"),dz=s=>new Date(s+"T00:00:00Z"),d=new Date(),
+  sec2=l.filter(t=>(t.level||"").startsWith("3.")),sec1=l.filter(t=>!sec2.includes(t)),th={style:"thin"},bd={top:th,left:th,bottom:th,right:th};
  ws.columns=[6,50,24,14,42,12].map(width=>({width}));
  const m=(a,v,font,al)=>{ws.mergeCells(a);const c=ws.getCell(a.split(":")[0]);c.value=v;c.font={...F,...font};c.alignment={vertical:"middle",wrapText:true,horizontal:"center",...al}};
  m("A1:C1","CÔNG AN TỈNH TUYÊN QUANG",{bold:true});m("D1:F1","CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",{bold:true});
@@ -571,10 +582,10 @@ async function exA1(){
  put=(rw,vals,o={})=>{vals.forEach((v,i)=>{const c=rw.getCell(i+1);c.value=v;c.font={...F,...(o.font||{})};c.border=bd;c.alignment={vertical:"middle",wrapText:true,horizontal:[1,3,4,6].includes(i+1)||o.center?"center":"left"}})},
  table=(title,arr)=>{
   m(`A${row}:F${row}`,title,{bold:true},{horizontal:"left"});row++;
-  const h=ws.getRow(row);put(h,head,{font:{bold:true},center:true});h.height=64;row++;
+  const h=ws.getRow(row);put(h,head,{font:{bold:true},center:true});h.height=96;row++;
   if(!arr.length){put(ws.getRow(row),["","(Không có nhiệm vụ)","","","",""],{font:{italic:true}});row++}
   arr.forEach((t,i)=>{const rw=ws.getRow(row);put(rw,[i+1,t.title,unit,dz(t.due),t.prod||"",LVM[t.level]?LVM[t.level][2]:""]);
-   rw.getCell(4).numFmt="dd/mm/yyyy";rw.height=Math.max(30,17*Math.max(lines(t.title,52),lines(t.prod,44),lines(unit,24))+8);row++});
+   rw.getCell(4).numFmt="dd/mm/yyyy";rw.height=xH([[t.title,50],[t.prod,42],[unit,24]],18);row++});
   row++};
  table("I. Nhiệm vụ được giao",sec1);
  table("II. Nhiệm vụ chủ động trên địa bàn của Công an đơn vị, địa phương (có hạn trong tháng)",sec2);
@@ -583,6 +594,14 @@ async function exA1(){
  a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download=`mau-A1-thang-${String(r.m).padStart(2,"0")}-${r.y}.xlsx`;a.click();
 }
 document.addEventListener("click",e=>{const i=e.target;if(i&&i.tagName==="INPUT"&&(i.type==="date"||i.type==="month")){try{i.showPicker()}catch(_){}}});
+const unitHdr=()=>{$("hu").textContent=($("w6").value.trim()||"ĐỘI CÔNG TÁC").toUpperCase()},
+ unitUi=()=>{const L=isLead();["w2","w6"].forEach(k=>$(k).disabled=!L);$("us").classList.toggle("hide",!L)};
+async function saveUnit(){const m=$("umsg"),name=$("w2").value.trim(),short=$("w6").value.trim();
+ try{await db.collection("config").doc("unit").set({name,short});ls("w2",name);ls("w6",short);unitHdr();m.className="ok";m.textContent="Đã lưu."}catch(e){m.className="";m.textContent="Chưa lưu được: "+e.message}}
+const needUnit=()=>{const u=$("w2").value.trim();if(!u)alert("Chưa nhập đơn vị công tác. Vào Cài đặt → Đơn vị công tác để nhập (đội trưởng hoặc đội phó thực hiện).");return u};
+/* chiều cao dòng Excel: ước lượng thừa để chữ không bị che (ô gộp và dòng tự đặt cao không tự giãn) */
+const xLines=(t,w)=>String(t==null?"":t).split("\n").reduce((n,q)=>n+Math.max(1,Math.ceil(q.length/(w*.8))),0),
+ xH=(pairs,lh=17)=>Math.max(30,lh*Math.max(1,...pairs.map(([t,w])=>xLines(t,w)))+12);
 function fillUsers(){
  const o=users.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join(""),k=$("fp").value;
  $("fp").innerHTML='<option value="">Cả đội</option>'+o;$("fp").value=k;const k2=$("kp").value;$("kp").innerHTML='<option value="">Cả đội (KPI tập thể)</option>'+o;$("kp").value=k2;
@@ -597,9 +616,10 @@ auth.onAuthStateChanged(async u=>{
  me={uid:u.uid,...d.data()};
  $("login").classList.add("hide");$("app").classList.remove("hide");$("lead").classList.toggle("hide",!isLead());$("gm").classList.toggle("hide",!isLead());
  db.collection("config").doc("gemini").get().then(x=>{gem=x.exists?x.data():{};$("gn").value=gem.model||"";$("gk").placeholder=gem.key?"Đã lưu (nhập key mới để thay)":"API key Gemini"}).catch(()=>{});
- ["w2","w6"].forEach(k=>$(k).value=ls(k)||"");wkSel();
+ ["w2","w6"].forEach(k=>$(k).value=ls(k)||"");wkSel();unitHdr();
+ db.collection("config").doc("unit").get().then(x=>{if(x.exists){const u=x.data();$("w2").value=u.name||"";$("w6").value=u.short||"";ls("w2",$("w2").value);ls("w6",$("w6").value);unitHdr()}}).catch(()=>{});
  const hdr=()=>{$("who").innerHTML=`<span class="av">${me.avatar||"👤"}</span><span>${esc(me.name)} · ${R[me.role]} ▾</span><div id="mn" class="menu hide"><button onclick="tab(2);$('mn').classList.add('hide')">⚙️ Cài đặt</button><button onclick="auth.signOut()">🚪 Đăng xuất</button></div>`;$("who").onclick=e=>{if(!e.target.closest("#mn"))$("mn").classList.toggle("hide")}};hdr();
- unsub.push(db.collection("users").doc(u.uid).onSnapshot(s=>{if(s.exists){me={uid:u.uid,...s.data()};hdr();fillUsers();kdRender()}}));
+ unsub.push(db.collection("users").doc(u.uid).onSnapshot(s=>{if(s.exists){me={uid:u.uid,...s.data()};hdr();fillUsers();kdRender();unitUi()}}));
  unsub.push(db.collection("users").onSnapshot(s=>{users=s.docs.map(x=>({id:x.id,...x.data()}));fillUsers();render()}));
  unsub.push(db.collection("tasks").onSnapshot(s=>{tasks=s.docs.map(x=>({id:x.id,...x.data()}));render()}));
 });
